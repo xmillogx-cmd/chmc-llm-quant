@@ -1,0 +1,41 @@
+{
+  "model": "HuggingFaceTB/SmolLM-135M",
+  "stages": [2, 3],
+  "baseline_ppl": 21.28,
+  "data_status": "POST-FIX — fresh run after all critical bug fixes",
+  "stage2_layerwise_calibration": {
+    "baseline_ppl": 21.28,
+    "rank": 8,
+    "test_layers": 10,
+    "results": {
+      "no_calib_int4": {"ppl": 21.65, "ratio": 1.018},
+      "calib_int8": {"ppl": 21.27, "ratio": 1.0}
+    },
+    "conclusion": "Calibration has minimal impact at rank=8. no_calib_int4 ratio is only 1.018x vs baseline; calib_int8 matches baseline exactly (1.0x)."
+  },
+  "stage3_sparse_compensation": {
+    "baseline_ppl": 21.28,
+    "rank": 8,
+    "per_layer_analysis": {
+      "density_0.05": {
+        "no_comp": {"avg_recon_err": 0.131, "avg_cos_sim": 0.542},
+        "with_comp": {"avg_recon_err": 0.096, "avg_cos_sim": 0.775}
+      },
+      "density_0.1": {
+        "no_comp": {"avg_recon_err": 0.131, "avg_cos_sim": 0.54},
+        "with_comp": {"avg_recon_err": 0.08, "avg_cos_sim": 0.845}
+      },
+      "density_0.25": {
+        "no_comp": {"avg_recon_err": 0.132, "avg_cos_sim": 0.535},
+        "with_comp": {"avg_recon_err": 0.053, "avg_cos_sim": 0.936}
+      }
+    },
+    "full_model_sparse_comp": {
+      "density": 0.1,
+      "ppl": 63224.35,
+      "ratio": 2971.7,
+      "layers_compressed": 210
+    },
+    "conclusion": "Sparse compensation improves per-layer cosine similarity (density=0.1: 0.54 -> 0.845) but full-model PPL is catastrophic at 63k (2972x baseline). Not viable as standalone technique."
+  }
+}

@@ -1,0 +1,34 @@
+[
+  {
+    "method": "scalar_8bit",
+    "bits": 8,
+    "perplexity": 1.1003,
+    "compression_ratio": 1.994,
+    "ppl_degradation_pct": -1.01,
+    "ppl_ratio": 0.9899
+  },
+  {
+    "method": "scalar_4bit",
+    "bits": 4,
+    "perplexity": 1.3631,
+    "compression_ratio": 3.976,
+    "ppl_degradation_pct": 22.64,
+    "ppl_ratio": 1.2264
+  },
+  {
+    "method": "scalar_3bit",
+    "bits": 3,
+    "perplexity": 8390837.4709,
+    "compression_ratio": 5.29,
+    "ppl_degradation_pct": 754911053.48,
+    "ppl_ratio": 7549111.5348
+  },
+  {
+    "method": "scalar_2bit",
+    "bits": 2,
+    "perplexity": 188282989.4956,
+    "compression_ratio": 7.904,
+    "ppl_degradation_pct": 16939540115.53,
+    "ppl_ratio": 169395402.1553
+  }
+]

@@ -1,0 +1,6 @@
+{
+  "model": "HuggingFaceTB/SmolLM-135M",
+  "device": "cpu",
+  "perplexity": 1.1115,
+  "eval_text_length": 7680
+}

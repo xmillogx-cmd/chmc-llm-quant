@@ -1,0 +1,30 @@
+{
+  "model": "HuggingFaceTB/SmolLM-135M",
+  "pipeline": "CHMC v4 Stage 1 (post-fix)",
+  "baseline_ppl": 21.2757,
+  "chmc_results": {
+    "rank_4": {"ppl": 30.2432, "ratio": 1.421, "bw": 4.207, "layers_compressed": 210},
+    "rank_8": {"ppl": 27.5251, "ratio": 1.294, "bw": 4.391, "layers_compressed": 210}
+  },
+  "scalar_reference": {
+    "q4": {"ppl": 350.7131, "ratio": 16.484, "bw": 4.023},
+    "q5": {"ppl": 30.6391, "ratio": 1.440, "bw": 5.023}
+  },
+  "comparison_table": {
+    "scalar_q4_vs_chmc_rank4": {
+      "scalar_bw": 4.023,
+      "chmc_bw": 4.207,
+      "scalar_ratio": 16.484,
+      "chmc_ratio": 1.421,
+      "improvement_x": 11.60
+    },
+    "scalar_q5_vs_chmc_rank4": {
+      "scalar_bw": 5.023,
+      "chmc_bw": 4.207,
+      "scalar_ratio": 1.440,
+      "chmc_ratio": 1.421,
+      "note": "CHMC rank=4 slightly better than scalar_q5 AND at lower bandwidth (4.21 vs 5.02)"
+    }
+  },
+  "verdict": "CHMC rank=4 at bw=4.21 beats scalar_q4 by 11.6x in PPL ratio (1.42 vs 16.48). At matched bandwidth, CHMC is the clear winner."
+}

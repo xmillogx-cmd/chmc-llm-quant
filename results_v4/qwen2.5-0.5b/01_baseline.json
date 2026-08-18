@@ -1,0 +1,28 @@
+{
+  "model": "Qwen/Qwen2.5-0.5B",
+  "local_path": "G:\\uni\\cmq_experiment\\models\\qwen2.5-0.5b",
+  "params_millions": 494,
+  "compressible_layers": 168,
+  "vocab_size": 151665,
+  "baseline_ppl": 15.547,
+  "eval_dataset": "WikiText-2 Raw Test",
+  "ppl_config": {
+    "max_len": 512,
+    "stride": 256,
+    "overlap_masking": true,
+    "ignore_index": -100
+  },
+  "scalar_baselines": {
+    "q2": {"ppl": 29690904.4531, "ratio": 1909746.82, "bw": 2.014},
+    "q3": {"ppl": 311313.1915, "ratio": 20023.956, "bw": 3.014},
+    "q4": {"ppl": 161.4335, "ratio": 10.384, "bw": 4.014},
+    "q5": {"ppl": 22.0407, "ratio": 1.418, "bw": 5.014},
+    "q6": {"ppl": 17.1349, "ratio": 1.102, "bw": 6.014}
+  },
+  "notes": [
+    "Data collected after all critical fixes (overlap masking, FP16 baseline, per-channel accounting)",
+    "WikiText cached per-model via vocab_size hash (v151665)",
+    "No self-generated fallback",
+    "Old pre-fix baseline was 5494.07 — caused by using SmolLM WikiText cache (wrong vocab)"
+  ]
+}

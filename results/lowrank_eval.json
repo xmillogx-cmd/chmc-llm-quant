@@ -1,0 +1,47 @@
+[
+  {
+    "method": "lowrank_8",
+    "rank": 8,
+    "perplexity": 4467554851.9603,
+    "mean_compression_ratio": 37.87,
+    "compressed_matrices": 210,
+    "ppl_degradation_pct": 401939257836.15,
+    "ppl_ratio": 4019392579.3615
+  },
+  {
+    "method": "lowrank_16",
+    "rank": 16,
+    "perplexity": 458659.1814,
+    "mean_compression_ratio": 18.935,
+    "compressed_matrices": 210,
+    "ppl_degradation_pct": 41264783.62,
+    "ppl_ratio": 412648.8362
+  },
+  {
+    "method": "lowrank_32",
+    "rank": 32,
+    "perplexity": 2070472.1971,
+    "mean_compression_ratio": 9.468,
+    "compressed_matrices": 210,
+    "ppl_degradation_pct": 186277200.69,
+    "ppl_ratio": 1862773.0069
+  },
+  {
+    "method": "lowrank_64",
+    "rank": 64,
+    "perplexity": 1128976594.272,
+    "mean_compression_ratio": 4.734,
+    "compressed_matrices": 210,
+    "ppl_degradation_pct": 101572343064.37,
+    "ppl_ratio": 1015723431.6437
+  },
+  {
+    "method": "lowrank_128",
+    "rank": 128,
+    "perplexity": 28643980.807,
+    "mean_compression_ratio": 2.367,
+    "compressed_matrices": 210,
+    "ppl_degradation_pct": 2577056202.93,
+    "ppl_ratio": 25770563.0293
+  }
+]

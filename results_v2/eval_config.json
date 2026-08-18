@@ -1,0 +1,9 @@
+{
+  "model": "HuggingFaceTB/SmolLM-135M",
+  "device": "cpu",
+  "perplexity": 1.9055,
+  "n_tokens": 12062,
+  "max_len": 512,
+  "stride": 256,
+  "eval_source": "wikitext-2"
+}

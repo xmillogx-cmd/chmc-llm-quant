@@ -1,0 +1,34 @@
+{
+  "model": "Qwen/Qwen2.5-0.5B",
+  "stages": [4, 5],
+  "baseline_ppl": 15.55,
+  "data_status": "POST-FIX — fresh run after all critical bug fixes",
+  "stage4_effective_rank": {
+    "effective_rank_stats": {
+      "min": 29,
+      "median": 60,
+      "max": 61,
+      "top1_energy_median_pct": 3.8
+    },
+    "bottom_10_layers_by_eff_rank": [
+      {"layer": "model.layers.0.self_attn.k_proj", "eff_rank": 29, "top1_energy": 0.2119, "shape": "128x896"},
+      {"layer": "model.layers.0.self_attn.q_proj", "eff_rank": 41, "top1_energy": 0.3813, "shape": "896x896"},
+      {"layer": "model.layers.16.self_attn.k_proj", "eff_rank": 52, "top1_energy": 0.0566, "shape": "128x896"},
+      {"layer": "model.layers.22.self_attn.k_proj", "eff_rank": 52, "top1_energy": 0.0782, "shape": "128x896"},
+      {"layer": "model.layers.21.self_attn.k_proj", "eff_rank": 53, "top1_energy": 0.0668, "shape": "128x896"},
+      {"layer": "model.layers.20.self_attn.k_proj", "eff_rank": 54, "top1_energy": 0.0619, "shape": "128x896"},
+      {"layer": "model.layers.23.self_attn.k_proj", "eff_rank": 54, "top1_energy": 0.0693, "shape": "128x896"},
+      {"layer": "model.layers.10.self_attn.k_proj", "eff_rank": 55, "top1_energy": 0.0485, "shape": "128x896"},
+      {"layer": "model.layers.14.self_attn.k_proj", "eff_rank": 55, "top1_energy": 0.0491, "shape": "128x896"},
+      {"layer": "model.layers.0.mlp.gate_proj", "eff_rank": 56, "top1_energy": 0.0553, "shape": "4864x896"}
+    ],
+    "conclusion": "Min eff_rank=29 (no layer < 30). Rank-1 structural replacement is NOT viable for Qwen2.5-0.5B. k_proj layers consistently have the lowest effective rank."
+  },
+  "stage5_shared_basis_qkv": {
+    "total_qkv_layers": 72,
+    "total_blocks": 24,
+    "valid_blocks_shared_basis": 0,
+    "note": "Q and K projections have different output dimensions (q_proj: 896 out, k_proj: 128 out). Shared basis requires matching shapes — not applicable for this architecture.",
+    "conclusion": "Shared basis for Q/K/V cannot be applied due to architectural mismatch. Zero valid blocks found."
+  }
+}

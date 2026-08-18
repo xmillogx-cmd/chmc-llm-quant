@@ -1,0 +1,1178 @@
+[
+  {
+    "layer": "model.layers.0.self_attn.q_proj",
+    "effective_rank": 36.8,
+    "d90": 91,
+    "top64_energy": 0.8588,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.0.self_attn.k_proj",
+    "effective_rank": 36.8,
+    "d90": 91,
+    "top64_energy": 0.8588,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.0.self_attn.v_proj",
+    "effective_rank": 36.8,
+    "d90": 91,
+    "top64_energy": 0.8588,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.0.self_attn.o_proj",
+    "effective_rank": 527.5,
+    "d90": 778,
+    "top64_energy": 0.2802,
+    "allocated_rank": 64
+  },
+  {
+    "layer": "model.layers.0.mlp.gate_proj",
+    "effective_rank": 48.9,
+    "d90": 85,
+    "top64_energy": 0.8232,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.0.mlp.up_proj",
+    "effective_rank": 48.9,
+    "d90": 85,
+    "top64_energy": 0.8232,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.0.mlp.down_proj",
+    "effective_rank": 202.9,
+    "d90": 131,
+    "top64_energy": 0.6686,
+    "allocated_rank": 64
+  },
+  {
+    "layer": "model.layers.1.self_attn.q_proj",
+    "effective_rank": 57.6,
+    "d90": 78,
+    "top64_energy": 0.8562,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.1.self_attn.k_proj",
+    "effective_rank": 57.6,
+    "d90": 78,
+    "top64_energy": 0.8562,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.1.self_attn.v_proj",
+    "effective_rank": 57.6,
+    "d90": 78,
+    "top64_energy": 0.8562,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.1.self_attn.o_proj",
+    "effective_rank": 6.3,
+    "d90": 28,
+    "top64_energy": 0.9509,
+    "allocated_rank": 8
+  },
+  {
+    "layer": "model.layers.1.mlp.gate_proj",
+    "effective_rank": 59.2,
+    "d90": 92,
+    "top64_energy": 0.8024,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.1.mlp.up_proj",
+    "effective_rank": 59.2,
+    "d90": 92,
+    "top64_energy": 0.8024,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.1.mlp.down_proj",
+    "effective_rank": 254.9,
+    "d90": 334,
+    "top64_energy": 0.6127,
+    "allocated_rank": 64
+  },
+  {
+    "layer": "model.layers.2.self_attn.q_proj",
+    "effective_rank": 51.4,
+    "d90": 79,
+    "top64_energy": 0.8593,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.2.self_attn.k_proj",
+    "effective_rank": 51.4,
+    "d90": 79,
+    "top64_energy": 0.8593,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.2.self_attn.v_proj",
+    "effective_rank": 51.4,
+    "d90": 79,
+    "top64_energy": 0.8593,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.2.self_attn.o_proj",
+    "effective_rank": 61.7,
+    "d90": 89,
+    "top64_energy": 0.8524,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.2.mlp.gate_proj",
+    "effective_rank": 56.2,
+    "d90": 92,
+    "top64_energy": 0.8153,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.2.mlp.up_proj",
+    "effective_rank": 56.2,
+    "d90": 92,
+    "top64_energy": 0.8153,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.2.mlp.down_proj",
+    "effective_rank": 1.0,
+    "d90": 1,
+    "top64_energy": 0.9997,
+    "allocated_rank": 4
+  },
+  {
+    "layer": "model.layers.3.self_attn.q_proj",
+    "effective_rank": 41.5,
+    "d90": 64,
+    "top64_energy": 0.9015,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.3.self_attn.k_proj",
+    "effective_rank": 41.5,
+    "d90": 64,
+    "top64_energy": 0.9015,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.3.self_attn.v_proj",
+    "effective_rank": 41.5,
+    "d90": 64,
+    "top64_energy": 0.9015,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.3.self_attn.o_proj",
+    "effective_rank": 37.1,
+    "d90": 68,
+    "top64_energy": 0.8939,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.3.mlp.gate_proj",
+    "effective_rank": 3.3,
+    "d90": 10,
+    "top64_energy": 0.9668,
+    "allocated_rank": 4
+  },
+  {
+    "layer": "model.layers.3.mlp.up_proj",
+    "effective_rank": 3.3,
+    "d90": 10,
+    "top64_energy": 0.9668,
+    "allocated_rank": 4
+  },
+  {
+    "layer": "model.layers.3.mlp.down_proj",
+    "effective_rank": 1.0,
+    "d90": 1,
+    "top64_energy": 0.9994,
+    "allocated_rank": 4
+  },
+  {
+    "layer": "model.layers.4.self_attn.q_proj",
+    "effective_rank": 25.7,
+    "d90": 64,
+    "top64_energy": 0.9014,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.4.self_attn.k_proj",
+    "effective_rank": 25.7,
+    "d90": 64,
+    "top64_energy": 0.9014,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.4.self_attn.v_proj",
+    "effective_rank": 25.7,
+    "d90": 64,
+    "top64_energy": 0.9014,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.4.self_attn.o_proj",
+    "effective_rank": 43.4,
+    "d90": 71,
+    "top64_energy": 0.8866,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.4.mlp.gate_proj",
+    "effective_rank": 40.8,
+    "d90": 84,
+    "top64_energy": 0.8485,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.4.mlp.up_proj",
+    "effective_rank": 40.8,
+    "d90": 84,
+    "top64_energy": 0.8485,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.4.mlp.down_proj",
+    "effective_rank": 164.6,
+    "d90": 138,
+    "top64_energy": 0.6943,
+    "allocated_rank": 64
+  },
+  {
+    "layer": "model.layers.5.self_attn.q_proj",
+    "effective_rank": 37.3,
+    "d90": 73,
+    "top64_energy": 0.8818,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.5.self_attn.k_proj",
+    "effective_rank": 37.3,
+    "d90": 73,
+    "top64_energy": 0.8818,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.5.self_attn.v_proj",
+    "effective_rank": 37.3,
+    "d90": 73,
+    "top64_energy": 0.8818,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.5.self_attn.o_proj",
+    "effective_rank": 37.1,
+    "d90": 66,
+    "top64_energy": 0.8966,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.5.mlp.gate_proj",
+    "effective_rank": 26.1,
+    "d90": 71,
+    "top64_energy": 0.8863,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.5.mlp.up_proj",
+    "effective_rank": 26.1,
+    "d90": 71,
+    "top64_energy": 0.8863,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.5.mlp.down_proj",
+    "effective_rank": 33.7,
+    "d90": 94,
+    "top64_energy": 0.8477,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.6.self_attn.q_proj",
+    "effective_rank": 30.2,
+    "d90": 62,
+    "top64_energy": 0.9049,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.6.self_attn.k_proj",
+    "effective_rank": 30.2,
+    "d90": 62,
+    "top64_energy": 0.9049,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.6.self_attn.v_proj",
+    "effective_rank": 30.2,
+    "d90": 62,
+    "top64_energy": 0.9049,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.6.self_attn.o_proj",
+    "effective_rank": 31.4,
+    "d90": 55,
+    "top64_energy": 0.9141,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.6.mlp.gate_proj",
+    "effective_rank": 35.0,
+    "d90": 76,
+    "top64_energy": 0.8743,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.6.mlp.up_proj",
+    "effective_rank": 35.0,
+    "d90": 76,
+    "top64_energy": 0.8743,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.6.mlp.down_proj",
+    "effective_rank": 158.0,
+    "d90": 144,
+    "top64_energy": 0.7018,
+    "allocated_rank": 64
+  },
+  {
+    "layer": "model.layers.7.self_attn.q_proj",
+    "effective_rank": 24.8,
+    "d90": 57,
+    "top64_energy": 0.9154,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.7.self_attn.k_proj",
+    "effective_rank": 24.8,
+    "d90": 57,
+    "top64_energy": 0.9154,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.7.self_attn.v_proj",
+    "effective_rank": 24.8,
+    "d90": 57,
+    "top64_energy": 0.9154,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.7.self_attn.o_proj",
+    "effective_rank": 55.1,
+    "d90": 72,
+    "top64_energy": 0.8861,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.7.mlp.gate_proj",
+    "effective_rank": 34.4,
+    "d90": 76,
+    "top64_energy": 0.8749,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.7.mlp.up_proj",
+    "effective_rank": 34.4,
+    "d90": 76,
+    "top64_energy": 0.8749,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.7.mlp.down_proj",
+    "effective_rank": 179.5,
+    "d90": 154,
+    "top64_energy": 0.6772,
+    "allocated_rank": 64
+  },
+  {
+    "layer": "model.layers.8.self_attn.q_proj",
+    "effective_rank": 22.7,
+    "d90": 51,
+    "top64_energy": 0.9247,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.8.self_attn.k_proj",
+    "effective_rank": 22.7,
+    "d90": 51,
+    "top64_energy": 0.9247,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.8.self_attn.v_proj",
+    "effective_rank": 22.7,
+    "d90": 51,
+    "top64_energy": 0.9247,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.8.self_attn.o_proj",
+    "effective_rank": 53.6,
+    "d90": 71,
+    "top64_energy": 0.8852,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.8.mlp.gate_proj",
+    "effective_rank": 30.9,
+    "d90": 74,
+    "top64_energy": 0.881,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.8.mlp.up_proj",
+    "effective_rank": 30.9,
+    "d90": 74,
+    "top64_energy": 0.881,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.8.mlp.down_proj",
+    "effective_rank": 198.0,
+    "d90": 186,
+    "top64_energy": 0.67,
+    "allocated_rank": 64
+  },
+  {
+    "layer": "model.layers.9.self_attn.q_proj",
+    "effective_rank": 33.8,
+    "d90": 42,
+    "top64_energy": 0.945,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.9.self_attn.k_proj",
+    "effective_rank": 33.8,
+    "d90": 42,
+    "top64_energy": 0.945,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.9.self_attn.v_proj",
+    "effective_rank": 33.8,
+    "d90": 42,
+    "top64_energy": 0.945,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.9.self_attn.o_proj",
+    "effective_rank": 36.1,
+    "d90": 54,
+    "top64_energy": 0.9175,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.9.mlp.gate_proj",
+    "effective_rank": 33.9,
+    "d90": 77,
+    "top64_energy": 0.8758,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.9.mlp.up_proj",
+    "effective_rank": 33.9,
+    "d90": 77,
+    "top64_energy": 0.8758,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.9.mlp.down_proj",
+    "effective_rank": 209.3,
+    "d90": 216,
+    "top64_energy": 0.6622,
+    "allocated_rank": 64
+  },
+  {
+    "layer": "model.layers.10.self_attn.q_proj",
+    "effective_rank": 32.7,
+    "d90": 62,
+    "top64_energy": 0.9049,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.10.self_attn.k_proj",
+    "effective_rank": 32.7,
+    "d90": 62,
+    "top64_energy": 0.9049,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.10.self_attn.v_proj",
+    "effective_rank": 32.7,
+    "d90": 62,
+    "top64_energy": 0.9049,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.10.self_attn.o_proj",
+    "effective_rank": 26.8,
+    "d90": 51,
+    "top64_energy": 0.9232,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.10.mlp.gate_proj",
+    "effective_rank": 27.7,
+    "d90": 71,
+    "top64_energy": 0.8883,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.10.mlp.up_proj",
+    "effective_rank": 27.7,
+    "d90": 71,
+    "top64_energy": 0.8883,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.10.mlp.down_proj",
+    "effective_rank": 181.3,
+    "d90": 241,
+    "top64_energy": 0.6891,
+    "allocated_rank": 64
+  },
+  {
+    "layer": "model.layers.11.self_attn.q_proj",
+    "effective_rank": 36.8,
+    "d90": 45,
+    "top64_energy": 0.9399,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.11.self_attn.k_proj",
+    "effective_rank": 36.8,
+    "d90": 45,
+    "top64_energy": 0.9399,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.11.self_attn.v_proj",
+    "effective_rank": 36.8,
+    "d90": 45,
+    "top64_energy": 0.9399,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.11.self_attn.o_proj",
+    "effective_rank": 8.7,
+    "d90": 15,
+    "top64_energy": 0.9665,
+    "allocated_rank": 4
+  },
+  {
+    "layer": "model.layers.11.mlp.gate_proj",
+    "effective_rank": 33.6,
+    "d90": 76,
+    "top64_energy": 0.8796,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.11.mlp.up_proj",
+    "effective_rank": 33.6,
+    "d90": 76,
+    "top64_energy": 0.8796,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.11.mlp.down_proj",
+    "effective_rank": 186.8,
+    "d90": 211,
+    "top64_energy": 0.7015,
+    "allocated_rank": 64
+  },
+  {
+    "layer": "model.layers.12.self_attn.q_proj",
+    "effective_rank": 36.2,
+    "d90": 66,
+    "top64_energy": 0.8976,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.12.self_attn.k_proj",
+    "effective_rank": 36.2,
+    "d90": 66,
+    "top64_energy": 0.8976,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.12.self_attn.v_proj",
+    "effective_rank": 36.2,
+    "d90": 66,
+    "top64_energy": 0.8976,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.12.self_attn.o_proj",
+    "effective_rank": 39.3,
+    "d90": 62,
+    "top64_energy": 0.9057,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.12.mlp.gate_proj",
+    "effective_rank": 25.2,
+    "d90": 67,
+    "top64_energy": 0.8952,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.12.mlp.up_proj",
+    "effective_rank": 25.2,
+    "d90": 67,
+    "top64_energy": 0.8952,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.12.mlp.down_proj",
+    "effective_rank": 146.7,
+    "d90": 215,
+    "top64_energy": 0.7137,
+    "allocated_rank": 64
+  },
+  {
+    "layer": "model.layers.13.self_attn.q_proj",
+    "effective_rank": 30.0,
+    "d90": 55,
+    "top64_energy": 0.9169,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.13.self_attn.k_proj",
+    "effective_rank": 30.0,
+    "d90": 55,
+    "top64_energy": 0.9169,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.13.self_attn.v_proj",
+    "effective_rank": 30.0,
+    "d90": 55,
+    "top64_energy": 0.9169,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.13.self_attn.o_proj",
+    "effective_rank": 25.3,
+    "d90": 48,
+    "top64_energy": 0.9267,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.13.mlp.gate_proj",
+    "effective_rank": 23.3,
+    "d90": 64,
+    "top64_energy": 0.9014,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.13.mlp.up_proj",
+    "effective_rank": 23.3,
+    "d90": 64,
+    "top64_energy": 0.9014,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.13.mlp.down_proj",
+    "effective_rank": 170.3,
+    "d90": 204,
+    "top64_energy": 0.6971,
+    "allocated_rank": 64
+  },
+  {
+    "layer": "model.layers.14.self_attn.q_proj",
+    "effective_rank": 33.5,
+    "d90": 63,
+    "top64_energy": 0.9022,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.14.self_attn.k_proj",
+    "effective_rank": 33.5,
+    "d90": 63,
+    "top64_energy": 0.9022,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.14.self_attn.v_proj",
+    "effective_rank": 33.5,
+    "d90": 63,
+    "top64_energy": 0.9022,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.14.self_attn.o_proj",
+    "effective_rank": 32.8,
+    "d90": 58,
+    "top64_energy": 0.9115,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.14.mlp.gate_proj",
+    "effective_rank": 20.2,
+    "d90": 56,
+    "top64_energy": 0.9138,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.14.mlp.up_proj",
+    "effective_rank": 20.2,
+    "d90": 56,
+    "top64_energy": 0.9138,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.14.mlp.down_proj",
+    "effective_rank": 111.7,
+    "d90": 154,
+    "top64_energy": 0.7586,
+    "allocated_rank": 64
+  },
+  {
+    "layer": "model.layers.15.self_attn.q_proj",
+    "effective_rank": 27.9,
+    "d90": 52,
+    "top64_energy": 0.921,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.15.self_attn.k_proj",
+    "effective_rank": 27.9,
+    "d90": 52,
+    "top64_energy": 0.921,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.15.self_attn.v_proj",
+    "effective_rank": 27.9,
+    "d90": 52,
+    "top64_energy": 0.921,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.15.self_attn.o_proj",
+    "effective_rank": 28.8,
+    "d90": 50,
+    "top64_energy": 0.9249,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.15.mlp.gate_proj",
+    "effective_rank": 19.4,
+    "d90": 54,
+    "top64_energy": 0.9168,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.15.mlp.up_proj",
+    "effective_rank": 19.4,
+    "d90": 54,
+    "top64_energy": 0.9168,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.15.mlp.down_proj",
+    "effective_rank": 104.5,
+    "d90": 139,
+    "top64_energy": 0.7712,
+    "allocated_rank": 64
+  },
+  {
+    "layer": "model.layers.16.self_attn.q_proj",
+    "effective_rank": 28.5,
+    "d90": 55,
+    "top64_energy": 0.919,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.16.self_attn.k_proj",
+    "effective_rank": 28.5,
+    "d90": 55,
+    "top64_energy": 0.919,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.16.self_attn.v_proj",
+    "effective_rank": 28.5,
+    "d90": 55,
+    "top64_energy": 0.919,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.16.self_attn.o_proj",
+    "effective_rank": 66.0,
+    "d90": 66,
+    "top64_energy": 0.8984,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.16.mlp.gate_proj",
+    "effective_rank": 17.9,
+    "d90": 53,
+    "top64_energy": 0.9202,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.16.mlp.up_proj",
+    "effective_rank": 17.9,
+    "d90": 53,
+    "top64_energy": 0.9202,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.16.mlp.down_proj",
+    "effective_rank": 118.6,
+    "d90": 120,
+    "top64_energy": 0.7583,
+    "allocated_rank": 64
+  },
+  {
+    "layer": "model.layers.17.self_attn.q_proj",
+    "effective_rank": 29.4,
+    "d90": 59,
+    "top64_energy": 0.9105,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.17.self_attn.k_proj",
+    "effective_rank": 29.4,
+    "d90": 59,
+    "top64_energy": 0.9105,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.17.self_attn.v_proj",
+    "effective_rank": 29.4,
+    "d90": 59,
+    "top64_energy": 0.9105,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.17.self_attn.o_proj",
+    "effective_rank": 5.1,
+    "d90": 16,
+    "top64_energy": 0.9756,
+    "allocated_rank": 4
+  },
+  {
+    "layer": "model.layers.17.mlp.gate_proj",
+    "effective_rank": 15.6,
+    "d90": 52,
+    "top64_energy": 0.9225,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.17.mlp.up_proj",
+    "effective_rank": 15.6,
+    "d90": 52,
+    "top64_energy": 0.9225,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.17.mlp.down_proj",
+    "effective_rank": 106.7,
+    "d90": 116,
+    "top64_energy": 0.7734,
+    "allocated_rank": 64
+  },
+  {
+    "layer": "model.layers.18.self_attn.q_proj",
+    "effective_rank": 32.4,
+    "d90": 62,
+    "top64_energy": 0.9042,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.18.self_attn.k_proj",
+    "effective_rank": 32.4,
+    "d90": 62,
+    "top64_energy": 0.9042,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.18.self_attn.v_proj",
+    "effective_rank": 32.4,
+    "d90": 62,
+    "top64_energy": 0.9042,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.18.self_attn.o_proj",
+    "effective_rank": 42.8,
+    "d90": 58,
+    "top64_energy": 0.9127,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.18.mlp.gate_proj",
+    "effective_rank": 20.2,
+    "d90": 58,
+    "top64_energy": 0.9126,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.18.mlp.up_proj",
+    "effective_rank": 20.2,
+    "d90": 58,
+    "top64_energy": 0.9126,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.18.mlp.down_proj",
+    "effective_rank": 118.5,
+    "d90": 121,
+    "top64_energy": 0.7613,
+    "allocated_rank": 64
+  },
+  {
+    "layer": "model.layers.19.self_attn.q_proj",
+    "effective_rank": 22.2,
+    "d90": 45,
+    "top64_energy": 0.9348,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.19.self_attn.k_proj",
+    "effective_rank": 22.2,
+    "d90": 45,
+    "top64_energy": 0.9348,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.19.self_attn.v_proj",
+    "effective_rank": 22.2,
+    "d90": 45,
+    "top64_energy": 0.9348,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.19.self_attn.o_proj",
+    "effective_rank": 33.1,
+    "d90": 56,
+    "top64_energy": 0.9149,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.19.mlp.gate_proj",
+    "effective_rank": 15.9,
+    "d90": 51,
+    "top64_energy": 0.9249,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.19.mlp.up_proj",
+    "effective_rank": 15.9,
+    "d90": 51,
+    "top64_energy": 0.9249,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.19.mlp.down_proj",
+    "effective_rank": 105.7,
+    "d90": 113,
+    "top64_energy": 0.7742,
+    "allocated_rank": 64
+  },
+  {
+    "layer": "model.layers.20.self_attn.q_proj",
+    "effective_rank": 38.4,
+    "d90": 63,
+    "top64_energy": 0.9042,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.20.self_attn.k_proj",
+    "effective_rank": 38.4,
+    "d90": 63,
+    "top64_energy": 0.9042,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.20.self_attn.v_proj",
+    "effective_rank": 38.4,
+    "d90": 63,
+    "top64_energy": 0.9042,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.20.self_attn.o_proj",
+    "effective_rank": 3.0,
+    "d90": 6,
+    "top64_energy": 0.9819,
+    "allocated_rank": 4
+  },
+  {
+    "layer": "model.layers.20.mlp.gate_proj",
+    "effective_rank": 18.0,
+    "d90": 52,
+    "top64_energy": 0.9226,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.20.mlp.up_proj",
+    "effective_rank": 18.0,
+    "d90": 52,
+    "top64_energy": 0.9226,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.20.mlp.down_proj",
+    "effective_rank": 72.2,
+    "d90": 96,
+    "top64_energy": 0.8282,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.21.self_attn.q_proj",
+    "effective_rank": 42.1,
+    "d90": 59,
+    "top64_energy": 0.9141,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.21.self_attn.k_proj",
+    "effective_rank": 42.1,
+    "d90": 59,
+    "top64_energy": 0.9141,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.21.self_attn.v_proj",
+    "effective_rank": 42.1,
+    "d90": 59,
+    "top64_energy": 0.9141,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.21.self_attn.o_proj",
+    "effective_rank": 5.0,
+    "d90": 21,
+    "top64_energy": 0.9851,
+    "allocated_rank": 8
+  },
+  {
+    "layer": "model.layers.21.mlp.gate_proj",
+    "effective_rank": 10.4,
+    "d90": 32,
+    "top64_energy": 0.9523,
+    "allocated_rank": 8
+  },
+  {
+    "layer": "model.layers.21.mlp.up_proj",
+    "effective_rank": 10.4,
+    "d90": 32,
+    "top64_energy": 0.9523,
+    "allocated_rank": 8
+  },
+  {
+    "layer": "model.layers.21.mlp.down_proj",
+    "effective_rank": 1.1,
+    "d90": 1,
+    "top64_energy": 0.9986,
+    "allocated_rank": 4
+  },
+  {
+    "layer": "model.layers.22.self_attn.q_proj",
+    "effective_rank": 38.2,
+    "d90": 51,
+    "top64_energy": 0.9347,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.22.self_attn.k_proj",
+    "effective_rank": 38.2,
+    "d90": 51,
+    "top64_energy": 0.9347,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.22.self_attn.v_proj",
+    "effective_rank": 38.2,
+    "d90": 51,
+    "top64_energy": 0.9347,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.22.self_attn.o_proj",
+    "effective_rank": 39.2,
+    "d90": 40,
+    "top64_energy": 0.9502,
+    "allocated_rank": 16
+  },
+  {
+    "layer": "model.layers.22.mlp.gate_proj",
+    "effective_rank": 30.5,
+    "d90": 64,
+    "top64_energy": 0.9005,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.22.mlp.up_proj",
+    "effective_rank": 30.5,
+    "d90": 64,
+    "top64_energy": 0.9005,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.22.mlp.down_proj",
+    "effective_rank": 45.9,
+    "d90": 79,
+    "top64_energy": 0.8724,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.23.self_attn.q_proj",
+    "effective_rank": 32.7,
+    "d90": 49,
+    "top64_energy": 0.9403,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.23.self_attn.k_proj",
+    "effective_rank": 32.7,
+    "d90": 49,
+    "top64_energy": 0.9403,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.23.self_attn.v_proj",
+    "effective_rank": 32.7,
+    "d90": 49,
+    "top64_energy": 0.9403,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.23.self_attn.o_proj",
+    "effective_rank": 43.1,
+    "d90": 57,
+    "top64_energy": 0.9191,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.23.mlp.gate_proj",
+    "effective_rank": 30.5,
+    "d90": 61,
+    "top64_energy": 0.907,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.23.mlp.up_proj",
+    "effective_rank": 30.5,
+    "d90": 61,
+    "top64_energy": 0.907,
+    "allocated_rank": 32
+  },
+  {
+    "layer": "model.layers.23.mlp.down_proj",
+    "effective_rank": 15.3,
+    "d90": 31,
+    "top64_energy": 0.9543,
+    "allocated_rank": 8
+  }
+]

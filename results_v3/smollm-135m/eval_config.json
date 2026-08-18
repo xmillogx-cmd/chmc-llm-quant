@@ -1,0 +1,8 @@
+{
+  "model": "smollm-135m",
+  "baseline_ppl": 5.103066751400459,
+  "max_len": 512,
+  "stride": 256,
+  "device": "cpu",
+  "n_configs_tested": 24
+}

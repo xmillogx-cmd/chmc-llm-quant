@@ -1,0 +1,167 @@
+[
+  {
+    "method": "plain_svd",
+    "rank": 8,
+    "bits": 16,
+    "perplexity": 4633909530.4906,
+    "ppl_ratio_to_base": 2431860157.7,
+    "avg_output_error": 0.815,
+    "avg_cos_sim": 0.5026,
+    "avg_compression_ratio": 37.87,
+    "compressed_matrices": 210
+  },
+  {
+    "method": "cov_proj",
+    "rank": 8,
+    "bits": 16,
+    "perplexity": 9326.8115,
+    "ppl_ratio_to_base": 4894.68,
+    "avg_output_error": 0.5627,
+    "avg_cos_sim": 0.762,
+    "avg_compression_ratio": 37.87,
+    "compressed_matrices": 210
+  },
+  {
+    "method": "weighted_svd",
+    "rank": 8,
+    "bits": 16,
+    "perplexity": 12942.2213,
+    "ppl_ratio_to_base": 6792.03,
+    "avg_output_error": 0.5361,
+    "avg_cos_sim": 0.7815,
+    "avg_compression_ratio": 37.87,
+    "compressed_matrices": 210
+  },
+  {
+    "method": "plain_svd",
+    "rank": 16,
+    "bits": 16,
+    "perplexity": 161073.3391,
+    "ppl_ratio_to_base": 84530.75,
+    "avg_output_error": 0.7678,
+    "avg_cos_sim": 0.5759,
+    "avg_compression_ratio": 18.93,
+    "compressed_matrices": 210
+  },
+  {
+    "method": "cov_proj",
+    "rank": 16,
+    "bits": 16,
+    "perplexity": 77038.9497,
+    "ppl_ratio_to_base": 40429.78,
+    "avg_output_error": 0.4889,
+    "avg_cos_sim": 0.8193,
+    "avg_compression_ratio": 18.93,
+    "compressed_matrices": 210
+  },
+  {
+    "method": "weighted_svd",
+    "rank": 16,
+    "bits": 16,
+    "perplexity": 257523.9915,
+    "ppl_ratio_to_base": 135147.73,
+    "avg_output_error": 0.4533,
+    "avg_cos_sim": 0.8414,
+    "avg_compression_ratio": 18.93,
+    "compressed_matrices": 210
+  },
+  {
+    "method": "plain_svd",
+    "rank": 32,
+    "bits": 16,
+    "perplexity": 139870.5978,
+    "ppl_ratio_to_base": 73403.62,
+    "avg_output_error": 0.6989,
+    "avg_cos_sim": 0.6608,
+    "avg_compression_ratio": 9.47,
+    "compressed_matrices": 210
+  },
+  {
+    "method": "cov_proj",
+    "rank": 32,
+    "bits": 16,
+    "perplexity": 28501.3904,
+    "ppl_ratio_to_base": 14957.43,
+    "avg_output_error": 0.3937,
+    "avg_cos_sim": 0.8801,
+    "avg_compression_ratio": 9.47,
+    "compressed_matrices": 210
+  },
+  {
+    "method": "weighted_svd",
+    "rank": 32,
+    "bits": 16,
+    "perplexity": 58288.2887,
+    "ppl_ratio_to_base": 30589.5,
+    "avg_output_error": 0.3494,
+    "avg_cos_sim": 0.9024,
+    "avg_compression_ratio": 9.47,
+    "compressed_matrices": 210
+  },
+  {
+    "method": "cov_proj_residual_q4",
+    "rank": 8,
+    "bits": 4,
+    "perplexity": 9.0694,
+    "ppl_ratio_to_base": 4.76,
+    "avg_output_error": 0.1435,
+    "avg_cos_sim": 0.9866,
+    "avg_compression_ratio": 3.56,
+    "compressed_matrices": 210
+  },
+  {
+    "method": "weighted_svd_residual_q4",
+    "rank": 8,
+    "bits": 4,
+    "perplexity": 7.5218,
+    "ppl_ratio_to_base": 3.95,
+    "avg_output_error": 0.1327,
+    "avg_cos_sim": 0.9889,
+    "avg_compression_ratio": 151.48,
+    "compressed_matrices": 210
+  },
+  {
+    "method": "cov_proj_residual_q4",
+    "rank": 16,
+    "bits": 4,
+    "perplexity": 9.7783,
+    "ppl_ratio_to_base": 5.13,
+    "avg_output_error": 0.1415,
+    "avg_cos_sim": 0.9869,
+    "avg_compression_ratio": 3.21,
+    "compressed_matrices": 210
+  },
+  {
+    "method": "weighted_svd_residual_q4",
+    "rank": 16,
+    "bits": 4,
+    "perplexity": 7.7911,
+    "ppl_ratio_to_base": 4.09,
+    "avg_output_error": 0.1283,
+    "avg_cos_sim": 0.9895,
+    "avg_compression_ratio": 75.74,
+    "compressed_matrices": 210
+  },
+  {
+    "method": "cov_proj_residual_q4",
+    "rank": 32,
+    "bits": 4,
+    "perplexity": 8.3919,
+    "ppl_ratio_to_base": 4.4,
+    "avg_output_error": 0.1386,
+    "avg_cos_sim": 0.9876,
+    "avg_compression_ratio": 2.71,
+    "compressed_matrices": 210
+  },
+  {
+    "method": "weighted_svd_residual_q4",
+    "rank": 32,
+    "bits": 4,
+    "perplexity": 10.2942,
+    "ppl_ratio_to_base": 5.4,
+    "avg_output_error": 0.1211,
+    "avg_cos_sim": 0.9906,
+    "avg_compression_ratio": 37.87,
+    "compressed_matrices": 210
+  }
+]

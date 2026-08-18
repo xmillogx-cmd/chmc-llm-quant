@@ -1,0 +1,30 @@
+{
+  "model": "Qwen/Qwen2.5-0.5B",
+  "pipeline": "CHMC v4 Stage 1 (post-fix)",
+  "baseline_ppl": 15.547,
+  "chmc_results": {
+    "rank_4": {"ppl": 27.0804, "ratio": 1.742, "bw": 4.112, "layers_compressed": 168},
+    "rank_8": {"ppl": 23.2372, "ratio": 1.495, "bw": 4.210, "layers_compressed": 168}
+  },
+  "scalar_reference": {
+    "q4": {"ppl": 161.4335, "ratio": 10.384, "bw": 4.014},
+    "q5": {"ppl": 22.0407, "ratio": 1.418, "bw": 5.014}
+  },
+  "comparison_table": {
+    "scalar_q4_vs_chmc_rank4": {
+      "scalar_bw": 4.014,
+      "chmc_bw": 4.112,
+      "scalar_ratio": 10.384,
+      "chmc_ratio": 1.742,
+      "improvement_x": 5.96
+    },
+    "scalar_q5_vs_chmc_rank4": {
+      "scalar_bw": 5.014,
+      "chmc_bw": 4.112,
+      "scalar_ratio": 1.418,
+      "chmc_ratio": 1.742,
+      "note": "CHMC rank=4 is worse than scalar_q5 (1.74 vs 1.42) but at significantly lower bandwidth (4.11 vs 5.01)"
+    }
+  },
+  "verdict": "CHMC rank=4 at bw=4.11 beats scalar_q4 by 6.0x in PPL ratio (1.74 vs 10.38). At matched bandwidth, CHMC wins."
+}

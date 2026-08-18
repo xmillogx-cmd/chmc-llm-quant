@@ -1,0 +1,41 @@
+{
+  "model": "Qwen/Qwen2.5-0.5B",
+  "stages": [2, 3],
+  "baseline_ppl": 15.55,
+  "data_status": "POST-FIX — fresh run after all critical bug fixes",
+  "stage2_layerwise_calibration": {
+    "baseline_ppl": 15.55,
+    "rank": 8,
+    "test_layers": 10,
+    "results": {
+      "no_calib_int4": {"ppl": 15.84, "ratio": 1.019},
+      "calib_int8": {"ppl": 15.56, "ratio": 1.001}
+    },
+    "conclusion": "Calibration has minimal impact at rank=8 on Qwen. no_calib_int4 ratio is only 1.019x vs baseline; calib_int8 matches baseline (1.001x)."
+  },
+  "stage3_sparse_compensation": {
+    "baseline_ppl": 15.55,
+    "rank": 8,
+    "per_layer_analysis": {
+      "density_0.05": {
+        "no_comp": {"avg_recon_err": 0.028, "avg_cos_sim": 0.496},
+        "with_comp": {"avg_recon_err": 0.021, "avg_cos_sim": 0.742}
+      },
+      "density_0.1": {
+        "no_comp": {"avg_recon_err": 0.028, "avg_cos_sim": 0.495},
+        "with_comp": {"avg_recon_err": 0.018, "avg_cos_sim": 0.817}
+      },
+      "density_0.25": {
+        "no_comp": {"avg_recon_err": 0.028, "avg_cos_sim": 0.496},
+        "with_comp": {"avg_recon_err": 0.012, "avg_cos_sim": 0.92}
+      }
+    },
+    "full_model_sparse_comp": {
+      "density": 0.1,
+      "ppl": 653985.09,
+      "ratio": 42065.0,
+      "layers_compressed": 168
+    },
+    "conclusion": "Sparse compensation improves per-layer cosine similarity (density=0.1: 0.495 -> 0.817) but full-model PPL is catastrophic at 654k (42,065x baseline). Not viable as standalone technique."
+  }
+}

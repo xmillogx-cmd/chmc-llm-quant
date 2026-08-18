@@ -1,0 +1,16 @@
+{
+  "model": "HuggingFaceTB/SmolLM-135M",
+  "device": "cpu",
+  "hidden_dim": 576,
+  "n_tokens_used": 22,
+  "anisotropy_global": 0.746575,
+  "anisotropy_pairwise": 0.555671,
+  "pca_d90": 9,
+  "pca_d95": 13,
+  "pca_d99": 19,
+  "pca_components_used": 22,
+  "top10_pct_variance": 0.602427,
+  "top25_pct_variance": 0.799782,
+  "cone_strength": "[OK] moderate",
+  "low_dim_ratio": 0.0156
+}

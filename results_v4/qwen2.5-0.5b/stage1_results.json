@@ -1,0 +1,47 @@
+{
+  "model": "Qwen/Qwen2.5-0.5B",
+  "local_path": "G:\\uni\\cmq_experiment\\models\\qwen2.5-0.5b",
+  "baseline_ppl": 15.547,
+  "total_layers": 168,
+  "scalar_baselines": {
+    "scalar_q2": {
+      "ppl": 29690904.4531,
+      "ppl_ratio": 1909746.82,
+      "bit_per_weight": 2.014
+    },
+    "scalar_q3": {
+      "ppl": 311313.1915,
+      "ppl_ratio": 20023.956,
+      "bit_per_weight": 3.014
+    },
+    "scalar_q4": {
+      "ppl": 161.4335,
+      "ppl_ratio": 10.384,
+      "bit_per_weight": 4.014
+    },
+    "scalar_q5": {
+      "ppl": 22.0407,
+      "ppl_ratio": 1.418,
+      "bit_per_weight": 5.014
+    },
+    "scalar_q6": {
+      "ppl": 17.1349,
+      "ppl_ratio": 1.102,
+      "bit_per_weight": 6.014
+    }
+  },
+  "chmc_results": {
+    "rank_4": {
+      "ppl": 27.0804,
+      "ratio": 1.742,
+      "bw": 4.112,
+      "layers_compressed": 168
+    },
+    "rank_8": {
+      "ppl": 23.2372,
+      "ratio": 1.495,
+      "bw": 4.21,
+      "layers_compressed": 168
+    }
+  }
+}

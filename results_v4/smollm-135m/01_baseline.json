@@ -1,0 +1,27 @@
+{
+  "model": "HuggingFaceTB/SmolLM-135M",
+  "local_path": "G:\\uni\\cmq_experiment\\models\\smollm-135m",
+  "params_millions": 134.5,
+  "compressible_layers": 210,
+  "vocab_size": 49152,
+  "baseline_ppl": 21.2757,
+  "eval_dataset": "WikiText-2 Raw Test",
+  "ppl_config": {
+    "max_len": 512,
+    "stride": 256,
+    "overlap_masking": true,
+    "ignore_index": -100
+  },
+  "scalar_baselines": {
+    "q2": {"ppl": 9444688669.2234, "ratio": 443919473.027, "bw": 2.023},
+    "q3": {"ppl": 50731.3529, "ratio": 2384.476, "bw": 3.023},
+    "q4": {"ppl": 350.7131, "ratio": 16.484, "bw": 4.023},
+    "q5": {"ppl": 30.6391, "ratio": 1.440, "bw": 5.023},
+    "q6": {"ppl": 23.4758, "ratio": 1.103, "bw": 6.023}
+  },
+  "notes": [
+    "Data collected after all critical fixes (overlap masking, FP16 baseline, per-channel accounting)",
+    "WikiText cached per-model via vocab_size hash",
+    "No self-generated fallback"
+  ]
+}

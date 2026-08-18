@@ -1,0 +1,47 @@
+{
+  "model": "HuggingFaceTB/SmolLM-135M",
+  "local_path": "G:\\uni\\cmq_experiment\\models\\smollm-135m",
+  "baseline_ppl": 21.2757,
+  "total_layers": 210,
+  "scalar_baselines": {
+    "scalar_q2": {
+      "ppl": 9444688669.2234,
+      "ppl_ratio": 443919473.027,
+      "bit_per_weight": 2.023
+    },
+    "scalar_q3": {
+      "ppl": 50731.3529,
+      "ppl_ratio": 2384.476,
+      "bit_per_weight": 3.023
+    },
+    "scalar_q4": {
+      "ppl": 350.7131,
+      "ppl_ratio": 16.484,
+      "bit_per_weight": 4.023
+    },
+    "scalar_q5": {
+      "ppl": 30.6391,
+      "ppl_ratio": 1.44,
+      "bit_per_weight": 5.023
+    },
+    "scalar_q6": {
+      "ppl": 23.4758,
+      "ppl_ratio": 1.103,
+      "bit_per_weight": 6.023
+    }
+  },
+  "chmc_results": {
+    "rank_4": {
+      "ppl": 30.2432,
+      "ratio": 1.421,
+      "bw": 4.207,
+      "layers_compressed": 210
+    },
+    "rank_8": {
+      "ppl": 27.5251,
+      "ratio": 1.294,
+      "bw": 4.391,
+      "layers_compressed": 210
+    }
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "model": "Qwen/Qwen2.5-0.5B",
+  "baseline_ppl": 15.547,
+  "stage2_calibration": {
+    "rank": 8,
+    "test_layers": 10,
+    "baseline_ppl": 15.547,
+    "results": {
+      "no_calib_int4": {
+        "ppl": 15.84,
+        "ratio": 1.019
+      },
+      "calib_int8": {
+        "ppl": 15.56,
+        "ratio": 1.001
+      }
+    }
+  },
+  "stage3_sparse_compensation": {
+    "baseline_ppl": 15.547,
+    "rank": 8,
+    "per_layer_analysis": {
+      "density_0.05": {
+        "no_comp": {
+          "avg_recon_err": 0.028,
+          "avg_cos_sim": 0.496
+        },
+        "with_comp": {
+          "avg_recon_err": 0.021,
+          "avg_cos_sim": 0.742
+        }
+      },
+      "density_0.1": {
+        "no_comp": {
+          "avg_recon_err": 0.028,
+          "avg_cos_sim": 0.495
+        },
+        "with_comp": {
+          "avg_recon_err": 0.018,
+          "avg_cos_sim": 0.817
+        }
+      },
+      "density_0.25": {
+        "no_comp": {
+          "avg_recon_err": 0.028,
+          "avg_cos_sim": 0.496
+        },
+        "with_comp": {
+          "avg_recon_err": 0.012,
+          "avg_cos_sim": 0.92
+        }
+      }
+    },
+    "full_model_sparse_comp": {
+      "density": 0.1,
+      "ppl": 653985.09,
+      "ratio": 42065.0
+    }
+  },
+  "stage4_effective_rank": {
+    "effective_rank_stats": {
+      "min": 29,
+      "median": 60,
+      "max": 61,
+      "top1_energy_median": 3.8
+    },
+    "bottom_10_layers_by_eff_rank": [
+      {
+        "layer": "model.layers.0.self_attn.k_proj",
+        "eff_rank": 29,
+        "top1_energy": 0.2119,
+        "shape": "128x896"
+      },
+      {
+        "layer": "model.layers.0.self_attn.q_proj",
+        "eff_rank": 41,
+        "top1_energy": 0.3813,
+        "shape": "896x896"
+      },
+      {
+        "layer": "model.layers.16.self_attn.k_proj",
+        "eff_rank": 52,
+        "top1_energy": 0.0566,
+        "shape": "128x896"
+      },
+      {
+        "layer": "model.layers.22.self_attn.k_proj",
+        "eff_rank": 52,
+        "top1_energy": 0.0782,
+        "shape": "128x896"
+      },
+      {
+        "layer": "model.layers.21.self_attn.k_proj",
+        "eff_rank": 53,
+        "top1_energy": 0.0668,
+        "shape": "128x896"
+      },
+      {
+        "layer": "model.layers.20.self_attn.k_proj",
+        "eff_rank": 54,
+        "top1_energy": 0.0619,
+        "shape": "128x896"
+      },
+      {
+        "layer": "model.layers.23.self_attn.k_proj",
+        "eff_rank": 54,
+        "top1_energy": 0.0693,
+        "shape": "128x896"
+      },
+      {
+        "layer": "model.layers.10.self_attn.k_proj",
+        "eff_rank": 55,
+        "top1_energy": 0.0485,
+        "shape": "128x896"
+      },
+      {
+        "layer": "model.layers.14.self_attn.k_proj",
+        "eff_rank": 55,
+        "top1_energy": 0.0491,
+        "shape": "128x896"
+      },
+      {
+        "layer": "model.layers.0.mlp.gate_proj",
+        "eff_rank": 56,
+        "top1_energy": 0.0553,
+        "shape": "4864x896"
+      }
+    ]
+  },
+  "stage5_shared_basis_qkv": {
+    "total_qkv_layers": 72,
+    "total_blocks": 24,
+    "valid_blocks_shared_basis": 0,
+    "note": "Q and K projections have different output dimensions in this model architecture. Shared basis requires matching shapes."
+  }
+}
