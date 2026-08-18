@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Virtualenv (never commit)
+venv/
+
+# Model weights — download via download_hf_model.py / download_tinyllama_direct.py
+models/
+
+# Auto-downloaded WikiText-2 caches (recreated on first run, keyed by vocab size)
+.wikitext_cache*
+.calib_text*
+
+# Logs (every long-running script tees console output here; not artifacts)
+*.log
+logs/
+v6/step12_log.txt
+
+# Large binary data artifacts (.pt): TDA activations, per-layer weight dumps.
+# Keep the JSON/CSV/PNG/MD/HTML analysis results — those are the reproducible record.
+results_v6/tda_analysis/*.pt
+results_v6/per_layer_drift/chmc_weights_seed42.pt
