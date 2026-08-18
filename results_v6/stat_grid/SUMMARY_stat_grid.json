@@ -1,0 +1,104 @@
+{
+  "target_bpw": 4.2875,
+  "model": "smollm-135m",
+  "base_seed": 42,
+  "configs": {
+    "block_damp005": {
+      "overrides": {
+        "strict_sequential": false,
+        "dampening": 0.05
+      },
+      "n": 3,
+      "ratios": [
+        1.181924,
+        1.19541,
+        1.194979
+      ],
+      "mean": 1.190771,
+      "std": 0.007665,
+      "min": 1.181924,
+      "max": 1.19541
+    },
+    "block_damp01": {
+      "overrides": {
+        "strict_sequential": false,
+        "dampening": 0.1
+      },
+      "n": 3,
+      "ratios": [
+        1.172215,
+        1.189182,
+        1.182128
+      ],
+      "mean": 1.181175,
+      "std": 0.008524,
+      "min": 1.172215,
+      "max": 1.189182
+    },
+    "strict_damp004": {
+      "overrides": {
+        "strict_sequential": true,
+        "dampening": 0.04
+      },
+      "n": 3,
+      "ratios": [
+        1.19279,
+        1.193906,
+        1.190585
+      ],
+      "mean": 1.192427,
+      "std": 0.00169,
+      "min": 1.190585,
+      "max": 1.193906
+    },
+    "strict_damp006": {
+      "overrides": {
+        "strict_sequential": true,
+        "dampening": 0.06
+      },
+      "n": 3,
+      "ratios": [
+        1.175302,
+        1.188269,
+        1.176889
+      ],
+      "mean": 1.180153,
+      "std": 0.007073,
+      "min": 1.175302,
+      "max": 1.188269
+    },
+    "strict_damp005": {
+      "overrides": {
+        "strict_sequential": true,
+        "dampening": 0.05
+      },
+      "n": 4,
+      "ratios": [
+        1.172276,
+        1.178328,
+        1.17365,
+        1.192928
+      ],
+      "mean": 1.179296,
+      "std": 0.00945,
+      "min": 1.172276,
+      "max": 1.192928
+    }
+  },
+  "errors": {},
+  "best_vs_gptq": {
+    "best_tag": "strict_damp005",
+    "best_mean": 1.179296,
+    "best_std": 0.00945,
+    "best_min": 1.172276,
+    "best_max": 1.192928,
+    "gptq_ratio": 1.1761,
+    "margin": -0.003196,
+    "margin_in_std": -0.338,
+    "beats_gptq": false,
+    "significant": false,
+    "verdict": "margin -0.003196 = -0.3\u03c3 -> WITHIN NOISE"
+  },
+  "log_file": "G:\\uni\\cmq_experiment\\results_v6\\stat_grid\\logs\\run_20260815_234848.log",
+  "elapsed_sec": 710.6
+}

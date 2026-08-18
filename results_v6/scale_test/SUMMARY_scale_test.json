@@ -1,0 +1,267 @@
+{
+  "target_bpw": 4.2875,
+  "base_seed": 42,
+  "n_reps": 3,
+  "models": {
+    "qwen2.5-3b": {
+      "device_map": "auto",
+      "gptq": {
+        "ppl": 9.743,
+        "baseline_ppl": 8.9756,
+        "ratio": 1.085498,
+        "method": "gptqmodel_4bit_fp32_auto",
+        "device_map": "auto",
+        "dtype": "torch.float32",
+        "quant_time_sec": 604.15
+      },
+      "chmc": {
+        "configs": {
+          "block_damp005": {
+            "overrides": {
+              "strict_sequential": false,
+              "dampening": 0.05
+            },
+            "n": 3,
+            "ratios": [
+              1.09239,
+              1.072111,
+              1.086239
+            ],
+            "mean": 1.08358,
+            "std": 0.010398,
+            "min": 1.072111,
+            "max": 1.09239
+          },
+          "block_damp01": {
+            "overrides": {
+              "strict_sequential": false,
+              "dampening": 0.1
+            },
+            "n": 3,
+            "ratios": [
+              1.088889,
+              1.069131,
+              1.082016
+            ],
+            "mean": 1.080012,
+            "std": 0.01003,
+            "min": 1.069131,
+            "max": 1.088889
+          },
+          "strict_damp004": {
+            "overrides": {
+              "strict_sequential": true,
+              "dampening": 0.04
+            },
+            "n": 3,
+            "ratios": [
+              1.099582,
+              1.081547,
+              1.08186
+            ],
+            "mean": 1.087663,
+            "std": 0.010323,
+            "min": 1.081547,
+            "max": 1.099582
+          },
+          "strict_damp006": {
+            "overrides": {
+              "strict_sequential": true,
+              "dampening": 0.06
+            },
+            "n": 3,
+            "ratios": [
+              1.097368,
+              1.081053,
+              1.080561
+            ],
+            "mean": 1.086327,
+            "std": 0.009565,
+            "min": 1.080561,
+            "max": 1.097368
+          },
+          "strict_damp005": {
+            "overrides": {
+              "strict_sequential": true,
+              "dampening": 0.05
+            },
+            "n": 3,
+            "ratios": [
+              1.098955,
+              1.077626,
+              1.099068
+            ],
+            "mean": 1.091883,
+            "std": 0.012347,
+            "min": 1.077626,
+            "max": 1.099068
+          }
+        },
+        "errors": {}
+      },
+      "best_vs_gptq": {
+        "best_tag": "block_damp01",
+        "best_mean": 1.080012,
+        "best_std": 0.01003,
+        "gptq_ratio": 1.085498,
+        "margin": 0.005486,
+        "margin_in_std": 0.547,
+        "beats_gptq": true,
+        "significant": false,
+        "verdict": "margin +0.005486 = 0.5\u03c3 -> WITHIN NOISE"
+      }
+    },
+    "qwen3-4b": {
+      "device_map": "auto",
+      "gptq": {
+        "ppl": 17.3049,
+        "baseline_ppl": 15.8522,
+        "ratio": 1.091636,
+        "method": "gptqmodel_4bit_fp32_auto",
+        "device_map": "auto",
+        "dtype": "torch.float32",
+        "quant_time_sec": 633.28
+      },
+      "chmc": {
+        "configs": {
+          "block_damp005": {
+            "overrides": {
+              "strict_sequential": false,
+              "dampening": 0.05
+            },
+            "n": 3,
+            "ratios": [
+              1.088396,
+              1.104568,
+              1.028359
+            ],
+            "mean": 1.073774,
+            "std": 0.040153,
+            "min": 1.028359,
+            "max": 1.104568
+          },
+          "block_damp01": {
+            "overrides": {
+              "strict_sequential": false,
+              "dampening": 0.1
+            },
+            "n": 3,
+            "ratios": [
+              1.056322,
+              1.071728,
+              1.070701
+            ],
+            "mean": 1.06625,
+            "std": 0.008614,
+            "min": 1.056322,
+            "max": 1.071728
+          },
+          "strict_damp004": {
+            "overrides": {
+              "strict_sequential": true,
+              "dampening": 0.04
+            },
+            "n": 3,
+            "ratios": [
+              1.048837,
+              1.117341,
+              1.117972
+            ],
+            "mean": 1.094717,
+            "std": 0.039734,
+            "min": 1.048837,
+            "max": 1.117972
+          },
+          "strict_damp006": {
+            "overrides": {
+              "strict_sequential": true,
+              "dampening": 0.06
+            },
+            "n": 3,
+            "ratios": [
+              1.069095,
+              1.085693,
+              1.078661
+            ],
+            "mean": 1.077816,
+            "std": 0.008331,
+            "min": 1.069095,
+            "max": 1.085693
+          },
+          "strict_damp005": {
+            "overrides": {
+              "strict_sequential": true,
+              "dampening": 0.05
+            },
+            "n": 3,
+            "ratios": [
+              1.042569,
+              1.072441,
+              1.109158
+            ],
+            "mean": 1.074723,
+            "std": 0.033353,
+            "min": 1.042569,
+            "max": 1.109158
+          }
+        },
+        "errors": {}
+      },
+      "best_vs_gptq": {
+        "best_tag": "block_damp01",
+        "best_mean": 1.06625,
+        "best_std": 0.008614,
+        "gptq_ratio": 1.091636,
+        "margin": 0.025386,
+        "margin_in_std": 2.947,
+        "beats_gptq": true,
+        "significant": true,
+        "verdict": "margin +0.025386 = 2.9\u03c3 -> REAL WIN"
+      }
+    }
+  },
+  "cross_model": {
+    "qwen2.5-0.5b": {
+      "chmc_best": 1.1787,
+      "gptq": 1.1407,
+      "margin": -0.038,
+      "margin_in_std": -2.8,
+      "verdict": "REAL LOSS",
+      "source": "prior"
+    },
+    "tinyllama-1.1b": {
+      "chmc_best": 1.0586,
+      "gptq": 1.0807,
+      "margin": 0.0221,
+      "margin_in_std": 33.0,
+      "verdict": "REAL WIN",
+      "source": "prior"
+    },
+    "smollm-135m": {
+      "chmc_best": 1.1793,
+      "gptq": 1.1761,
+      "margin": -0.003,
+      "margin_in_std": -0.34,
+      "verdict": "NEUTRAL",
+      "source": "prior"
+    },
+    "qwen2.5-3b": {
+      "chmc_best": 1.080012,
+      "gptq": 1.085498,
+      "margin": 0.005486,
+      "margin_in_std": 0.547,
+      "verdict": "margin +0.005486 = 0.5\u03c3 -> WITHIN NOISE",
+      "source": "this_run"
+    },
+    "qwen3-4b": {
+      "chmc_best": 1.06625,
+      "gptq": 1.091636,
+      "margin": 0.025386,
+      "margin_in_std": 2.947,
+      "verdict": "margin +0.025386 = 2.9\u03c3 -> REAL WIN",
+      "source": "this_run"
+    }
+  },
+  "log_file": "G:\\uni\\cmq_experiment\\results_v6\\scale_test\\logs\\run_20260817_173419.log",
+  "elapsed_sec": 13420.2
+}

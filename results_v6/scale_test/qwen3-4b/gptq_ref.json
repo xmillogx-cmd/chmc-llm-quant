@@ -1,0 +1,9 @@
+{
+  "ppl": 17.3049,
+  "baseline_ppl": 15.8522,
+  "ratio": 1.091636,
+  "method": "gptqmodel_4bit_fp32_auto",
+  "device_map": "auto",
+  "dtype": "torch.float32",
+  "quant_time_sec": 633.28
+}

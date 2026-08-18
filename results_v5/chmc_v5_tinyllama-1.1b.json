@@ -1,0 +1,65 @@
+{
+  "model": "tinyllama-1.1b",
+  "baseline_ppl": 9.4244,
+  "compressed_ppl": 10.1213,
+  "ratio": 1.0739,
+  "config": {
+    "rank": 8,
+    "residual_bits": 4,
+    "group_size": 128,
+    "use_compensation": true,
+    "mixed_precision": true,
+    "adaptive_rank": true
+  },
+  "timing": {
+    "compress_sec": 9.46,
+    "total_sec": 49.9
+  },
+  "layer_stats": [
+    {
+      "rank": 12,
+      "residual_bits": 8,
+      "group_size": 128,
+      "lr_energy_pct": 0.2309,
+      "recon_err_ratio": 0.010278,
+      "use_compensation": true,
+      "layer": "model.layers.0.self_attn.q_proj"
+    },
+    {
+      "rank": 12,
+      "residual_bits": 8,
+      "group_size": 128,
+      "lr_energy_pct": 0.4611,
+      "recon_err_ratio": 0.007788,
+      "use_compensation": true,
+      "layer": "model.layers.0.self_attn.k_proj"
+    },
+    {
+      "rank": 8,
+      "residual_bits": 4,
+      "group_size": 128,
+      "lr_energy_pct": 0.0178,
+      "recon_err_ratio": 0.133909,
+      "use_compensation": true,
+      "layer": "model.layers.0.self_attn.v_proj"
+    },
+    {
+      "rank": 8,
+      "residual_bits": 4,
+      "group_size": 128,
+      "lr_energy_pct": 0.0596,
+      "recon_err_ratio": 0.191816,
+      "use_compensation": true,
+      "layer": "model.layers.0.self_attn.o_proj"
+    },
+    {
+      "rank": 8,
+      "residual_bits": 4,
+      "group_size": 128,
+      "lr_energy_pct": 0.0315,
+      "recon_err_ratio": 0.159027,
+      "use_compensation": true,
+      "layer": "model.layers.0.mlp.gate_proj"
+    }
+  ]
+}

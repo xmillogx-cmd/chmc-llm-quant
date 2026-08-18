@@ -1,0 +1,10 @@
+{
+  "baseline_ppl": 14.9356,
+  "gptqmodel_4bit": {
+    "method": "gptqmodel_4bit",
+    "ppl": 17.0373,
+    "quant_time_sec": 172.5,
+    "group_size": 128,
+    "ratio": 1.1407
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "model": "qwen2.5-0.5b",
+  "data_file": "G:\\uni\\cmq_experiment\\results_v6\\tda_analysis\\tda_activations_qwen2.5-0.5b.pt",
+  "method": {
+    "vr_sparsification": "kNN k=32, triangles=cliques-3 (cap 300k)",
+    "h0_backend": "union-find (exact) + GUDHI cross-check",
+    "h1_backend": "GUDHI SimplexTree, filtration=max vertex/edge weight",
+    "eps_star": "median nearest-neighbour distance per cloud",
+    "w1": "trimmed top-64 by persistence, L_inf, diagonal match cost p/2; essential classes excluded",
+    "sample_points": 512,
+    "seed": 42,
+    "effective_rank": "exp(entropy of normalized sigma^2) — v5 convention (generate_cov_stats.py / rank_gap.py)"
+  },
+  "ppl": {
+    "baseline": 14.934841106232573,
+    "compressed": 17.44493298191512,
+    "ratio": 1.1680695400659495
+  },
+  "config_overrides": {
+    "strict_sequential": true,
+    "dampening": 0.05,
+    "residual_bits": 4,
+    "group_size": 128
+  },
+  "aggregates": {
+    "cos_mean_blocks": 0.9864,
+    "w1_h0_mean": 13.90777,
+    "w1_h1_mean": 25.773375,
+    "b1_drop_blocks": 9,
+    "b1_gain_blocks": 8,
+    "topo_rank_delta_mean": 1.25,
+    "h0_crosscheck_mismatches": 0
+  },
+  "weights": {
+    "all": {
+      "n_layers": 168,
+      "eff_rank_min_pre": 18.679,
+      "eff_rank_med_pre": 358.145,
+      "eff_rank_min_post": 23.001,
+      "eff_rank_med_post": 366.195,
+      "d90_min_pre": 21,
+      "d90_med_pre": 325,
+      "d90_min_post": 28,
+      "d90_med_post": 331
+    },
+    "attn": {
+      "n_layers": 96,
+      "eff_rank_min_pre": 18.679,
+      "eff_rank_med_pre": 123.382,
+      "eff_rank_min_post": 23.001,
+      "eff_rank_med_post": 123.207,
+      "d90_min_pre": 21,
+      "d90_med_pre": 108,
+      "d90_min_post": 28,
+      "d90_med_post": 107
+    },
+    "mlp": {
+      "n_layers": 72,
+      "eff_rank_min_pre": 630.065,
+      "eff_rank_med_pre": 731.744,
+      "eff_rank_min_post": 636.711,
+      "eff_rank_med_post": 734.844,
+      "d90_min_pre": 594,
+      "d90_med_pre": 653,
+      "d90_min_post": 599,
+      "d90_med_post": 654
+    }
+  },
+  "correlations_honest_proxy": {
+    "note": "W_1(H1) vs (1-cosine) по блокам — прокси 'топологическое изменение <-> потеря выравнивания'; delta-PPL на блок не измерялся",
+    "pearson_w1h1_vs_1minus_cos": 0.2512607509443132
+  },
+  "verdict_bits": [
+    "средний косинус pre/post высокий (>0.95): направление потоков почти не изменилось",
+    "число H_1-циклов при eps* примерно сохранено",
+    "effective rank весов почти не изменился (med 358.145 -> 366.195) — остаточная квантизация держит 'хвост' спектра"
+  ]
+}

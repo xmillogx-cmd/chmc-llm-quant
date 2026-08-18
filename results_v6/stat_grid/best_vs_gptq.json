@@ -1,0 +1,13 @@
+{
+  "best_tag": "strict_damp005",
+  "best_mean": 1.179296,
+  "best_std": 0.00945,
+  "best_min": 1.172276,
+  "best_max": 1.192928,
+  "gptq_ratio": 1.1761,
+  "margin": -0.003196,
+  "margin_in_std": -0.338,
+  "beats_gptq": false,
+  "significant": false,
+  "verdict": "margin -0.003196 = -0.3\u03c3 -> WITHIN NOISE"
+}

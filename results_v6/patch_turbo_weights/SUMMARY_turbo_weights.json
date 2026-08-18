@@ -1,0 +1,84 @@
+{
+  "target_bpw": 4.2875,
+  "steps": {
+    "step1_smoke": {
+      "all_pass": false
+    },
+    "ref_baseline": {
+      "ratio": 1.214645,
+      "bpw": 4.2665,
+      "baseline_ppl": 21.3072,
+      "compressed_ppl": 25.8807
+    },
+    "ref_baseline_hadamard": {
+      "ratio": 2.231026,
+      "bpw": 4.2665,
+      "baseline_ppl": 21.3072,
+      "compressed_ppl": 47.5369
+    },
+    "step2_patch4_ip": {
+      "ratio": 1.242801,
+      "bpw": 4.2665,
+      "baseline_ppl": 21.3072,
+      "compressed_ppl": 26.4806
+    },
+    "step3_patch3_lloydmax": {
+      "ratio": 1.345345,
+      "bpw": 4.2665,
+      "baseline_ppl": 21.3072,
+      "compressed_ppl": 28.6655
+    },
+    "step4_patch5_cone": {
+      "ratio": 2.151858,
+      "bpw": 4.2734,
+      "baseline_ppl": 21.3072,
+      "compressed_ppl": 45.8501
+    },
+    "step5_patch2_qjl": {
+      "ratio": 12541.681382,
+      "bpw": 4.2578,
+      "baseline_ppl": 21.3072,
+      "compressed_ppl": 267228.2004
+    },
+    "step6_combo_3_5": {
+      "ratio": 1.353144,
+      "bpw": 4.2734,
+      "baseline_ppl": 21.3072,
+      "compressed_ppl": 28.8317
+    },
+    "step7_combo_3_5_2": {
+      "ratio": 3515.690302,
+      "bpw": 4.2578,
+      "baseline_ppl": 21.3072,
+      "compressed_ppl": 74909.5408
+    },
+    "step8_best_vs_gptq": {
+      "best_tag": "ref_baseline",
+      "best_ratio": 1.214645,
+      "best_bpw": 4.2665,
+      "gptq_ratio": 1.1761,
+      "gptq_ppl": 25.0595,
+      "beats_gptq": false,
+      "margin": -0.038545
+    },
+    "step9_best_qwen2.5-0.5b": {
+      "model": "qwen2.5-0.5b",
+      "best_tag": "ref_baseline",
+      "ratio": 1.232547,
+      "bpw": 4.2724,
+      "gptq_ratio": 1.1407,
+      "beats_gptq": false
+    },
+    "step9_best_tinyllama-1.1b": {
+      "model": "tinyllama-1.1b",
+      "best_tag": "ref_baseline",
+      "ratio": 1.088885,
+      "bpw": 4.2837,
+      "gptq_ratio": 1.0807,
+      "beats_gptq": false
+    }
+  },
+  "errors": {},
+  "log_file": "G:\\uni\\cmq_experiment\\results_v6\\patch_turbo_weights\\logs\\run_20260815_212658.log",
+  "elapsed_sec": 123.5
+}

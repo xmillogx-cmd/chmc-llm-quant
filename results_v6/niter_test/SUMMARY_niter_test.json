@@ -1,0 +1,86 @@
+{
+  "model": "tinyllama-1.1b",
+  "overrides": {
+    "strict_sequential": false,
+    "dampening": 0.1
+  },
+  "target_bpw": 4.2875,
+  "gptq_ratio": 1.0807,
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "niter_grid": {
+    "5": {
+      "n": 3,
+      "ratios": [
+        1.058485,
+        1.057963,
+        1.059282
+      ],
+      "mean": 1.058577,
+      "std": 0.000664,
+      "min": 1.057963,
+      "max": 1.059282
+    },
+    "10": {
+      "n": 3,
+      "ratios": [
+        1.057826,
+        1.065945,
+        1.05924
+      ],
+      "mean": 1.061004,
+      "std": 0.004337,
+      "min": 1.057826,
+      "max": 1.065945
+    },
+    "20": {
+      "n": 3,
+      "ratios": [
+        1.068581,
+        1.064693,
+        1.065242
+      ],
+      "mean": 1.066172,
+      "std": 0.002104,
+      "min": 1.064693,
+      "max": 1.068581
+    }
+  },
+  "errors": {},
+  "self_check": {
+    "grid": {
+      "ratios": [
+        1.058485,
+        1.057963,
+        1.059282
+      ],
+      "mean": 1.058577,
+      "std": 0.000664
+    },
+    "reproduced": [
+      1.058485,
+      1.057963,
+      1.059282
+    ],
+    "match": true,
+    "max_diff": 0.0
+  },
+  "best_vs_gptq": {
+    "best_niter": 5,
+    "best_mean": 1.058577,
+    "best_std": 0.000664,
+    "best_min": 1.057963,
+    "best_max": 1.059282,
+    "gptq_ratio": 1.0807,
+    "margin": 0.022123,
+    "margin_in_std": 33.318,
+    "beats_gptq": true,
+    "significant": true,
+    "verdict": "margin +0.022123 = 33.3\u03c3 -> REAL WIN"
+  },
+  "log_file": "G:\\uni\\cmq_experiment\\results_v6\\niter_test\\logs\\run_20260816_022130.log",
+  "elapsed_sec": 231.6
+}

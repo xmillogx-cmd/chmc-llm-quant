@@ -1,0 +1,104 @@
+{
+  "target_bpw": 4.2875,
+  "model": "tinyllama-1.1b",
+  "base_seed": 42,
+  "configs": {
+    "block_damp005": {
+      "overrides": {
+        "strict_sequential": false,
+        "dampening": 0.05
+      },
+      "n": 3,
+      "ratios": [
+        1.069024,
+        1.058244,
+        1.069183
+      ],
+      "mean": 1.065484,
+      "std": 0.00627,
+      "min": 1.058244,
+      "max": 1.069183
+    },
+    "block_damp01": {
+      "overrides": {
+        "strict_sequential": false,
+        "dampening": 0.1
+      },
+      "n": 3,
+      "ratios": [
+        1.058485,
+        1.057963,
+        1.059282
+      ],
+      "mean": 1.058577,
+      "std": 0.000664,
+      "min": 1.057963,
+      "max": 1.059282
+    },
+    "strict_damp004": {
+      "overrides": {
+        "strict_sequential": true,
+        "dampening": 0.04
+      },
+      "n": 3,
+      "ratios": [
+        1.066285,
+        1.061493,
+        1.070121
+      ],
+      "mean": 1.065966,
+      "std": 0.004323,
+      "min": 1.061493,
+      "max": 1.070121
+    },
+    "strict_damp006": {
+      "overrides": {
+        "strict_sequential": true,
+        "dampening": 0.06
+      },
+      "n": 3,
+      "ratios": [
+        1.063325,
+        1.060927,
+        1.060278
+      ],
+      "mean": 1.06151,
+      "std": 0.001605,
+      "min": 1.060278,
+      "max": 1.063325
+    },
+    "strict_damp005": {
+      "overrides": {
+        "strict_sequential": true,
+        "dampening": 0.05
+      },
+      "n": 4,
+      "ratios": [
+        1.065154,
+        1.057544,
+        1.069099,
+        1.06638
+      ],
+      "mean": 1.064544,
+      "std": 0.004949,
+      "min": 1.057544,
+      "max": 1.069099
+    }
+  },
+  "errors": {},
+  "best_vs_gptq": {
+    "best_tag": "block_damp01",
+    "best_mean": 1.058577,
+    "best_std": 0.000664,
+    "best_min": 1.057963,
+    "best_max": 1.059282,
+    "gptq_ratio": 1.0807,
+    "margin": 0.022123,
+    "margin_in_std": 33.318,
+    "beats_gptq": true,
+    "significant": true,
+    "verdict": "margin +0.022123 = 33.3\u03c3 -> REAL WIN"
+  },
+  "log_file": "G:\\uni\\cmq_experiment\\results_v6\\stat_grid\\tinyllama-1.1b\\logs\\run_20260816_011237.log",
+  "elapsed_sec": 2015.7
+}

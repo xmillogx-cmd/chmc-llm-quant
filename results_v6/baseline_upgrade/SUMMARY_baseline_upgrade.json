@@ -1,0 +1,75 @@
+{
+  "target_bpw": 4.2875,
+  "steps": {
+    "ref_baseline": {
+      "ratio": 1.214645,
+      "bpw": 4.2665,
+      "baseline_ppl": 21.3072,
+      "compressed_ppl": 25.8807
+    },
+    "strict_gptq": {
+      "ratio": 1.221699,
+      "bpw": 4.2665,
+      "baseline_ppl": 21.3072,
+      "compressed_ppl": 26.031
+    },
+    "strict_gptq_damp0001": {
+      "ratio": 1.312903,
+      "bpw": 4.2665,
+      "baseline_ppl": 21.3072,
+      "compressed_ppl": 27.9743
+    },
+    "strict_gptq_damp005": {
+      "ratio": 1.172276,
+      "bpw": 4.2665,
+      "baseline_ppl": 21.3072,
+      "compressed_ppl": 24.9779
+    },
+    "strict_gptq_damp01": {
+      "ratio": 1.179802,
+      "bpw": 4.2665,
+      "baseline_ppl": 21.3072,
+      "compressed_ppl": 25.1383
+    },
+    "strict_gptq_gd1": {
+      "ratio": 1.463511,
+      "bpw": 4.2587,
+      "baseline_ppl": 21.3072,
+      "compressed_ppl": 31.1833
+    },
+    "strict_gptq_gd1_d0001": {
+      "ratio": 1.584177,
+      "bpw": 4.2587,
+      "baseline_ppl": 21.3072,
+      "compressed_ppl": 33.7544
+    },
+    "best_vs_gptq": {
+      "best_tag": "strict_gptq_damp005",
+      "best_ratio": 1.172276,
+      "best_bpw": 4.2665,
+      "gptq_ratio": 1.1761,
+      "gptq_ppl": 25.0595,
+      "beats_gptq": true,
+      "margin": 0.003824
+    },
+    "best_qwen2.5-0.5b": {
+      "model": "qwen2.5-0.5b",
+      "best_tag": "strict_gptq_damp005",
+      "ratio": 1.173862,
+      "bpw": 4.2724,
+      "gptq_ratio": 1.1407,
+      "beats_gptq": false
+    },
+    "best_tinyllama-1.1b": {
+      "model": "tinyllama-1.1b",
+      "best_tag": "strict_gptq_damp005",
+      "ratio": 1.065154,
+      "bpw": 4.2837,
+      "gptq_ratio": 1.0807,
+      "beats_gptq": true
+    }
+  },
+  "errors": {},
+  "log_file": "G:\\uni\\cmq_experiment\\results_v6\\baseline_upgrade\\logs\\run_20260815_214207.log",
+  "elapsed_sec": 670.6
+}

@@ -1,0 +1,54 @@
+{
+  "device": "cuda",
+  "layer": {
+    "W": [
+      576,
+      576
+    ],
+    "X_calib": [
+      512,
+      576
+    ]
+  },
+  "C3_qjl": {
+    "n_projections": 144,
+    "rank_same": 4,
+    "recon_err_int4": 0.195444,
+    "recon_err_qjl": 0.917403,
+    "qjl_over_int4": 4.6939,
+    "rank_int4_at_4.2875": 2,
+    "rank_qjl_at_4.2875": 72,
+    "bpw_int4": 4.3611,
+    "PASS_same_rank(<1.5x)": false,
+    "PASS_equal_bpw(rank>=2x)": true,
+    "PASS": true
+  },
+  "C2_lloyd_max": {
+    "bits": 4,
+    "mse_uniform": 0.083238,
+    "mse_lloyd_max": 0.012173,
+    "mse_ratio_lm_over_uni": 0.1462,
+    "PASS(<0.90)": true,
+    "PASS": true
+  },
+  "C4_ip_metric": {
+    "ip_bias_weight": 0.037925,
+    "ip_cosine_weight": 0.981198,
+    "ip_bias_output": 0.013951,
+    "ip_cosine_output": 0.993205,
+    "PASS_cosine_output(>0.95)": true,
+    "PASS_bias_output(<0.10)": true,
+    "PASS": true
+  },
+  "C1_cone_aware": {
+    "rank": 4,
+    "recon_err_plain_hadamard": 0.214539,
+    "recon_err_cone_aware": 0.215698,
+    "cone_over_plain": 1.0054,
+    "PASS_aniso(<0.90x)": false,
+    "PASS_all(<=1.0x)": false,
+    "PASS": false
+  },
+  "all_pass": false,
+  "elapsed_sec": 1.78
+}

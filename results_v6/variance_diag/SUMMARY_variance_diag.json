@@ -1,0 +1,26 @@
+{
+  "model": "smollm-135m",
+  "seed": 42,
+  "overrides": {
+    "strict_sequential": true,
+    "dampening": 0.05
+  },
+  "n_runs": 3,
+  "identical_eps": 1e-06,
+  "ratios": [
+    1.172276,
+    1.172276,
+    1.172276
+  ],
+  "errors": {},
+  "diagnosis": {
+    "min": 1.172276,
+    "max": 1.172276,
+    "range": 0.0,
+    "std": 0.0,
+    "identical": true,
+    "verdict": "IDENTICAL (range < 1e-6) -> CUDA deterministic for this seed; the grid variance came from DIFFERENT seeds (hidden seed-dependent randomness)."
+  },
+  "log_file": "G:\\uni\\cmq_experiment\\results_v6\\variance_diag\\logs\\run_20260816_005011.log",
+  "elapsed_sec": 195.1
+}

@@ -1,0 +1,65 @@
+{
+  "model": "qwen2.5-0.5b",
+  "baseline_ppl": 14.9356,
+  "compressed_ppl": 17.998,
+  "ratio": 1.205,
+  "config": {
+    "rank": 8,
+    "residual_bits": 4,
+    "group_size": 128,
+    "use_compensation": true,
+    "mixed_precision": true,
+    "adaptive_rank": true
+  },
+  "timing": {
+    "compress_sec": 6.05,
+    "total_sec": 39.87
+  },
+  "layer_stats": [
+    {
+      "rank": 8,
+      "residual_bits": 4,
+      "group_size": 128,
+      "lr_energy_pct": 0.3433,
+      "recon_err_ratio": 0.197928,
+      "use_compensation": true,
+      "layer": "model.layers.0.self_attn.q_proj"
+    },
+    {
+      "rank": 8,
+      "residual_bits": 4,
+      "group_size": 128,
+      "lr_energy_pct": 0.4124,
+      "recon_err_ratio": 0.149862,
+      "use_compensation": true,
+      "layer": "model.layers.0.self_attn.k_proj"
+    },
+    {
+      "rank": 8,
+      "residual_bits": 4,
+      "group_size": 128,
+      "lr_energy_pct": 0.0447,
+      "recon_err_ratio": 0.210392,
+      "use_compensation": true,
+      "layer": "model.layers.0.self_attn.v_proj"
+    },
+    {
+      "rank": 8,
+      "residual_bits": 4,
+      "group_size": 128,
+      "lr_energy_pct": 0.071,
+      "recon_err_ratio": 0.181893,
+      "use_compensation": true,
+      "layer": "model.layers.0.self_attn.o_proj"
+    },
+    {
+      "rank": 8,
+      "residual_bits": 4,
+      "group_size": 128,
+      "lr_energy_pct": 0.036,
+      "recon_err_ratio": 0.190249,
+      "use_compensation": true,
+      "layer": "model.layers.0.mlp.gate_proj"
+    }
+  ]
+}

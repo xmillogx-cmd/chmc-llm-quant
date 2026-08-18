@@ -1,0 +1,138 @@
+{
+  "target_bpw": 4.2875,
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "models": {
+    "smollm-135m": {
+      "overrides": {
+        "strict_sequential": true,
+        "dampening": 0.05
+      },
+      "gptq_ratio": 1.1761,
+      "baseline": {
+        "n": 3,
+        "ratios": [
+          1.172276,
+          1.178328,
+          1.17365
+        ],
+        "mean": 1.174751,
+        "std": 0.003173,
+        "min": 1.172276,
+        "max": 1.178328
+      },
+      "whitened": {
+        "n": 3,
+        "ratios": [
+          1.179147,
+          1.181981,
+          1.182916
+        ],
+        "mean": 1.181348,
+        "std": 0.001963,
+        "min": 1.179147,
+        "max": 1.182916
+      },
+      "delta_per_seed": [
+        0.006871,
+        0.003653,
+        0.009266
+      ],
+      "verdict": "WHITENING HURTS (mean delta +0.006597)"
+    },
+    "qwen2.5-0.5b": {
+      "overrides": {
+        "strict_sequential": true,
+        "dampening": 0.06
+      },
+      "gptq_ratio": 1.1407,
+      "baseline": {
+        "n": 3,
+        "ratios": [
+          1.172369,
+          1.169396,
+          1.194251
+        ],
+        "mean": 1.178672,
+        "std": 0.013573,
+        "min": 1.169396,
+        "max": 1.194251
+      },
+      "whitened": {
+        "n": 3,
+        "ratios": [
+          1.232889,
+          1.200541,
+          1.210907
+        ],
+        "mean": 1.214779,
+        "std": 0.016518,
+        "min": 1.200541,
+        "max": 1.232889
+      },
+      "delta_per_seed": [
+        0.06052,
+        0.031145,
+        0.016656
+      ],
+      "verdict": "WHITENING HURTS (mean delta +0.036107)"
+    },
+    "tinyllama-1.1b": {
+      "overrides": {
+        "strict_sequential": false,
+        "dampening": 0.1
+      },
+      "gptq_ratio": 1.0807,
+      "baseline": {
+        "n": 3,
+        "ratios": [
+          1.058485,
+          1.057963,
+          1.059282
+        ],
+        "mean": 1.058577,
+        "std": 0.000664,
+        "min": 1.057963,
+        "max": 1.059282
+      },
+      "whitened": {
+        "n": 3,
+        "ratios": [
+          1.066517,
+          1.066232,
+          1.067982
+        ],
+        "mean": 1.06691,
+        "std": 0.000939,
+        "min": 1.066232,
+        "max": 1.067982
+      },
+      "delta_per_seed": [
+        0.008032,
+        0.008269,
+        0.0087
+      ],
+      "verdict": "WHITENING HURTS (mean delta +0.008334)"
+    }
+  },
+  "errors": {},
+  "self_check": {
+    "expected": [
+      1.058485,
+      1.057963,
+      1.059282
+    ],
+    "reproduced": [
+      1.058485,
+      1.057963,
+      1.059282
+    ],
+    "max_diff": 0.0,
+    "match": true
+  },
+  "log_file": "G:\\uni\\cmq_experiment\\results_v6\\whitening_test\\logs\\run_20260816_120324.log",
+  "elapsed_sec": 1341.6
+}

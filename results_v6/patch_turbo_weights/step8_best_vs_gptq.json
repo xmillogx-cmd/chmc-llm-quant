@@ -1,0 +1,9 @@
+{
+  "best_tag": "ref_baseline",
+  "best_ratio": 1.214645,
+  "best_bpw": 4.2665,
+  "gptq_ratio": 1.1761,
+  "gptq_ppl": 25.0595,
+  "beats_gptq": false,
+  "margin": -0.038545
+}

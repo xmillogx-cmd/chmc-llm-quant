@@ -1,0 +1,42 @@
+{
+  "qwen2.5-0.5b": {
+    "chmc_best": 1.1787,
+    "gptq": 1.1407,
+    "margin": -0.038,
+    "margin_in_std": -2.8,
+    "verdict": "REAL LOSS",
+    "source": "prior"
+  },
+  "tinyllama-1.1b": {
+    "chmc_best": 1.0586,
+    "gptq": 1.0807,
+    "margin": 0.0221,
+    "margin_in_std": 33.0,
+    "verdict": "REAL WIN",
+    "source": "prior"
+  },
+  "smollm-135m": {
+    "chmc_best": 1.1793,
+    "gptq": 1.1761,
+    "margin": -0.003,
+    "margin_in_std": -0.34,
+    "verdict": "NEUTRAL",
+    "source": "prior"
+  },
+  "qwen2.5-3b": {
+    "chmc_best": 1.080012,
+    "gptq": 1.085498,
+    "margin": 0.005486,
+    "margin_in_std": 0.547,
+    "verdict": "margin +0.005486 = 0.5\u03c3 -> WITHIN NOISE",
+    "source": "this_run"
+  },
+  "qwen3-4b": {
+    "chmc_best": 1.06625,
+    "gptq": 1.091636,
+    "margin": 0.025386,
+    "margin_in_std": 2.947,
+    "verdict": "margin +0.025386 = 2.9\u03c3 -> REAL WIN",
+    "source": "this_run"
+  }
+}

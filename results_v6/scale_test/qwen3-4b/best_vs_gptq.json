@@ -1,0 +1,11 @@
+{
+  "best_tag": "block_damp01",
+  "best_mean": 1.06625,
+  "best_std": 0.008614,
+  "gptq_ratio": 1.091636,
+  "margin": 0.025386,
+  "margin_in_std": 2.947,
+  "beats_gptq": true,
+  "significant": true,
+  "verdict": "margin +0.025386 = 2.9\u03c3 -> REAL WIN"
+}

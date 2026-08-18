@@ -1,0 +1,36 @@
+{
+  "smollm-135m": {
+    "baseline_ppl": 21.3072,
+    "gptqmodel_4bit": {
+      "method": "gptqmodel_4bit",
+      "ppl": 25.0595,
+      "quant_time_sec": 102.3,
+      "group_size": 128,
+      "ratio": 1.1761
+    }
+  },
+  "gemma-4-e2b": {
+    "baseline_ppl": null,
+    "error": "RuntimeError: You set `ignore_mismatched_sizes` to `False`, thus raising an error. For details look at the above report!"
+  },
+  "qwen2.5-0.5b": {
+    "baseline_ppl": 14.9356,
+    "gptqmodel_4bit": {
+      "method": "gptqmodel_4bit",
+      "ppl": 17.0373,
+      "quant_time_sec": 172.5,
+      "group_size": 128,
+      "ratio": 1.1407
+    }
+  },
+  "tinyllama-1.1b": {
+    "baseline_ppl": 9.4244,
+    "gptqmodel_4bit": {
+      "method": "gptqmodel_4bit",
+      "ppl": 10.185,
+      "quant_time_sec": 263.94,
+      "group_size": 128,
+      "ratio": 1.0807
+    }
+  }
+}

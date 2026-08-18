@@ -1,0 +1,9 @@
+{
+  "best_tag": "strict_gptq_damp005",
+  "best_ratio": 1.172276,
+  "best_bpw": 4.2665,
+  "gptq_ratio": 1.1761,
+  "gptq_ppl": 25.0595,
+  "beats_gptq": true,
+  "margin": 0.003824
+}
