@@ -19,6 +19,10 @@ logs/
 v6/step12_log.txt
 
 # Large binary data artifacts (.pt): TDA activations, per-layer weight dumps.
-# Keep the JSON/CSV/PNG/MD/HTML analysis results — those are the reproducible record.
+# Keep the JSON/CSV/PNG/MD analysis results — those are the reproducible record.
 results_v6/tda_analysis/*.pt
 results_v6/per_layer_drift/chmc_weights_seed42.pt
+
+# HTML artifacts (article index.html, correlation report) — used externally as
+# standalone artifacts; intentionally NOT part of the repository.
+*.html
