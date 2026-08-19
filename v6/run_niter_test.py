@@ -1,32 +1,32 @@
 #!/usr/bin/env python3
 """
-run_niter_test.py — влияние niter (power iterations svd_lowrank) на разброс и качество
+run_niter_test.py - effect of niter (power iterations in svd_lowrank) on variance and quality
 ================================================================================
 
-Контекст: диагностика разброса (run_variance_diag) показала, что пайплайн
-детерминирован при фиксированном seed, а разброс в сетке (~0.008) идёт от
-seed-случайности. Источник найден: torch.svd_lowrank — randomized SVD,
-генерирует случайную проекцию Ω из глобального random state. niter=5 —
-мало power-итераций, поэтому результат зависит от Ω.
+Context: the variance diagnostics (run_variance_diag) showed that the pipeline
+is deterministic for a fixed seed, and the grid spread (~0.008) comes from
+seed randomness. Source identified: torch.svd_lowrank - randomized SVD,
+which generates a random projection Omega from the global random state. niter=5 -
+too few power iterations, so the result depends on Omega.
 
-Гипотеза: больше niter → Ω влияет меньше →
-  1. разброс между seed падает,
-  2. mean приближается к истинному (детерминированному) низкоранговому SVD
-     и может УЛУЧШИТЬСЯ (ближе к оптимуму).
+Hypothesis: more niter -> less influence of Omega ->
+  1. spread between seeds decreases,
+  2. mean approaches the true (deterministic) low-rank SVD
+     and may IMPROVE (closer to the optimum).
 
-Тест: TinyLlama-1.1b (модель с реальным win), лучший конфиг block_damp01
-(strict_sequential=False, dampening=0.1), niter ∈ {5, 10, 20} × 3 seed
-(42, 43, 44). Равный BPW 4.2875.
+Test: TinyLlama-1.1b (the model with a real win), best config block_damp01
+(strict_sequential=False, dampening=0.1), niter in {5, 10, 20} x 3 seeds
+(42, 43, 44). Equal BPW 4.2875.
 
-Self-check: niter=5 здесь должен ВТОРИЧНО воспроизвести числа сетки
-(те же seed, детерминизм подтверждён):
+Self-check: here niter=5 must SECONDARILY reproduce the grid numbers
+(same seeds, determinism confirmed):
   grid niter=5: ratios [1.058485, 1.057963, 1.059282], mean 1.058577.
-Если не совпадает — что-то изменилось в пайплайне, результат невалиден.
+If it does not match - something changed in the pipeline and the result is invalid.
 
-Итого 9 прогонов × ~60-90s = ~10-15 мин.
+Total of 9 runs x ~60-90s = ~10-15 min.
 
-Запускает ПОЛЬЗОВАТЕЛЬ (агент разделяет GPU и рискует OOM).
-Артефакты: results_v6/niter_test/
+Run by the USER (the agent shares the GPU and risks OOM).
+Artifacts: results_v6/niter_test/
 
 Usage:
     python run_niter_test.py
@@ -56,7 +56,7 @@ TARGET_BPW = 4.2875
 BASE_SEED = 42
 N_REPS = 3
 
-# лучший конфиг TinyLlama из сетки
+# best TinyLlama config from the grid
 OVERRIDES = {"strict_sequential": False, "dampening": 0.1}
 
 # (niter, n_reps)
@@ -66,7 +66,7 @@ NITER_GRID = [
     (20, N_REPS),
 ]
 
-# self-check: niter=5 из stat_grid (те же seed 42,43,44)
+# self-check: niter=5 from stat_grid (same seeds 42,43,44)
 GRID_NITER5 = {
     "ratios": [1.058485, 1.057963, 1.059282],
     "mean": 1.058577,

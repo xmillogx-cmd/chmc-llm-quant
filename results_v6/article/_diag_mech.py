@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Механизм концентрации объединённого облака [pre;post] на qwen blk3 (и smollm blk15)."""
+"""Mechanism of concentration in the combined cloud [pre;post] on qwen blk3 (and smollm blk15)."""
 import numpy as np
 import torch
 

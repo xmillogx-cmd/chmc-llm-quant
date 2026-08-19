@@ -39,21 +39,21 @@ ROOT_DIR = BASE_DIR.parent                          # cmq_experiment/
 
 import tda_log                                       # noqa: E402
 
-N_PTS = 512        # токенов на облако (детерминированная подвыборка)
-N_LINES = 150      # линий соответствия pre->post
+N_PTS = 512        # tokens per cloud (deterministic subsample)
+N_LINES = 150      # correspondence lines pre->post
 
 
 def _act2d(t: torch.Tensor) -> np.ndarray:
-    """Активации блока -> (N, d) float64. Старые .pt хранят (B=1, N, d)."""
+    """Block activations -> (N, d) float64. Old .pt files store (B=1, N, d)."""
     X = t.numpy()
     if X.ndim == 3:
-        assert X.shape[0] == 1, f"неожиданный batch={X.shape[0]}"
+        assert X.shape[0] == 1, f"unexpected batch={X.shape[0]}"
         X = X[0]
     return np.ascontiguousarray(X, dtype=np.float64)
 
 
 def _token_idx(n: int, m: int) -> np.ndarray:
-    """Детерминированная подвыборка ~m индексов токенов (равномерный шаг)."""
+    """Deterministic subsample of ~m token indices (uniform step)."""
     if n <= m:
         return np.arange(n)
     step = n // m
@@ -62,15 +62,15 @@ def _token_idx(n: int, m: int) -> np.ndarray:
 
 
 def _rel_disp(A: np.ndarray, B: np.ndarray) -> float:
-    """Среднее относительное смещение ||pre-post||/||pre|| по токенам."""
+    """Mean relative displacement ||pre-post||/||pre|| over tokens."""
     na = np.linalg.norm(A, axis=1)
     d = np.linalg.norm(A - B, axis=1)
     return float(np.mean(d / np.maximum(na, 1e-12)))
 
 
 def main():
-    ap = argparse.ArgumentParser(description="3D-проекция активаций pre/post сжатия")
-    ap.add_argument("--data", required=True, help="путь к tda_activations_<model>.pt")
+    ap = argparse.ArgumentParser(description="3D projection of activations before/after compression")
+    ap.add_argument("--data", required=True, help="path to tda_activations_<model>.pt")
     ap.add_argument("--out-dir", default=str(ROOT_DIR / "results_v6" / "tda_3d"))
     args = ap.parse_args()
 
@@ -94,7 +94,7 @@ def main():
         print(f"PPL baseline={ppl.get('baseline')} compressed={ppl.get('compressed')}"
               f" ratio={ppl.get('ratio')}")
 
-    # 4 представительных блока: первый, четверть, половина, последний (без дублей)
+    # 4 representative blocks: first, quarter, half, last (no duplicates)
     cand = [0, n_blocks // 4, n_blocks // 2, n_blocks - 1]
     blocks = sorted(set(cand))
 
@@ -106,7 +106,7 @@ def main():
         idx = _token_idx(A_pre.shape[0], N_PTS)
         Pp, Qq = A_pre[idx], A_post[idx]
 
-        # Общая PCA-3D основа на центрированном объединении [pre; post]
+        # Common PCA-3D basis on the centered union [pre; post]
         X = np.vstack([Pp, Qq])
         Xc = X - X.mean(axis=0)
         _, S, Vt = np.linalg.svd(Xc, full_matrices=False)
@@ -115,7 +115,7 @@ def main():
         Yp, Yq = Xc[: Pp.shape[0]] @ V3, Xc[Pp.shape[0]:] @ V3
 
         ax = axes[p]
-        # линии соответствия по токенам (~150 через равномерный шаг)
+        # per-token correspondence lines (~150 via a uniform step)
         li = _token_idx(len(idx), N_LINES)
         for j in li:
             ax.plot([Yp[j, 0], Yq[j, 0]], [Yp[j, 1], Yq[j, 1]], [Yp[j, 2], Yq[j, 2]],
@@ -130,7 +130,7 @@ def main():
             ax.set_zlabel("PC3")
         ax.legend(loc="best", fontsize=8)
 
-    supt = f"{model}: активации pre (синие) vs post CHMC v6 (оранжевые), линии = тот же токен"
+    supt = f"{model}: pre activations (blue) vs post CHMC v6 (orange), lines = same token"
     if isinstance(ppl, dict) and ppl.get("ratio"):
         supt += f" | PPL ratio={ppl['ratio']:.4f}"
     fig.suptitle(supt, fontsize=12)

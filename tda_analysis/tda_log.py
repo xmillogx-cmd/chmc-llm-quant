@@ -1,11 +1,11 @@
 """
-tda_log.py — логирование шагов TDA-пайплайна (консоль + файл)
+tda_log.py — logging of TDA pipeline steps (console + file)
 =============================================================
 
-Tee дублирует sys.stdout/sys.stderr в консоль И в лог-файл, поэтому весь
-вывод шага (prints, warnings, traceback при падении) сохраняется независимо
-от способа запуска (батник или вручную). Логи: tda_analysis\\logs\\ — это НЕ
-артефакты эксперимента (их по-прежнему ровно 5 в results_v6\\tda_analysis\\).
+Tee duplicates sys.stdout/sys.stderr to the console AND a log file, so all
+step output (prints, warnings, traceback on crash) is saved regardless of
+the launch method (batch script or manual). Logs: tda_analysis\\logs\\ — these
+are NOT experiment artifacts (there are still exactly 5 in results_v6\\tda_analysis\\).
 """
 
 import sys
@@ -14,7 +14,7 @@ from pathlib import Path
 
 
 class Tee:
-    """Поток, пишущий одновременно в несколько потоков."""
+    """Stream that writes to several streams simultaneously."""
 
     def __init__(self, *streams):
         self.streams = streams
@@ -35,7 +35,7 @@ class Tee:
 
 
 def log_file_for(step, model, base_dir=None):
-    """Путь лога: <tda_analysis>/logs/<step>_<model>_<YYYYmmdd_HHMMSS>.log."""
+    """Log path: <tda_analysis>/logs/<step>_<model>_<YYYYmmdd_HHMMSS>.log."""
     if base_dir is None:
         base_dir = Path(__file__).resolve().parent
     ts = time.strftime("%Y%m%d_%H%M%S")
@@ -43,7 +43,7 @@ def log_file_for(step, model, base_dir=None):
 
 
 def start_logging(log_path):
-    """sys.stdout/stderr -> консоль + файл (utf-8). Возвращает открытый файл."""
+    """sys.stdout/stderr -> console + file (utf-8). Returns the open file."""
     log_path = Path(log_path)
     log_path.parent.mkdir(parents=True, exist_ok=True)
     f = open(log_path, "w", encoding="utf-8")

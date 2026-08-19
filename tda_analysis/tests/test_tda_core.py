@@ -1,19 +1,19 @@
 """
-test_tda_core.py — CPU-тесты TDA-ядра (синтетические данные, без GPU/моделей)
+test_tda_core.py — CPU tests for the TDA core (synthetic data, no GPU/models)
 ==============================================================================
 
-Запуск:  venv\\Scripts\\python.exe tda_analysis\\tests\\test_tda_core.py
+Run:  venv\\Scripts\\python.exe tda_analysis\\tests\\test_tda_core.py
 
-Проверяет:
-  - kNN-граф и H_0 union-find на двух кластерах (b_0=2; в разреженном kNN VR
-    удалённые кластеры не сливаются — семантика спарсификации);
-  - кроссчек GUDHI vs union-find по b_0 на сетке масштабов;
-  - окружность: H_1 цикл живёт на среднем масштабе, персистентность ~ диаметр;
-  - конус (контрактируемое облако): H_1-персистентности малы против окружности;
-  - W_1: идентичные диаграммы -> 0; одна точка vs пусто -> p/2; треугольник-санитайз;
-  - effective_rank на матрице известного ранга ~= k; d90 на сконструированном спектре;
-  - topo-rank двух кластеров = 2 (остаётся 2 на всех масштабах из-за спарсификации);
-  - производительность persistence_gudhi на рабочем размере (n=256, d=32).
+Checks:
+  - kNN graph and H_0 union-find on two clusters (b_0=2; in a sparse kNN VR
+    distant clusters do not merge — sparsification semantics);
+  - GUDHI vs union-find cross-check of b_0 on a grid of scales;
+  - circle: the H_1 cycle lives at intermediate scale, persistence ~ diameter;
+  - cone (contractible cloud): H_1 persistences are small compared to the circle;
+  - W_1: identical diagrams -> 0; one point vs empty -> p/2; triangle sanity check;
+  - effective_rank on a matrix of known rank ~= k; d90 on a constructed spectrum;
+  - topo-rank of two clusters = 2 (stays 2 at all scales due to sparsification);
+  - performance of persistence_gudhi at working size (n=256, d=32).
 """
 
 import sys
@@ -58,7 +58,7 @@ def _circle(n=64, r=1.0):
 
 
 def _cone(n=200, seed=1):
-    """Точки на конусе (контрактируемо): (r cos t, r sin t, r)."""
+    """Points on a cone (contractible): (r cos t, r sin t, r)."""
     rng = np.random.default_rng(seed)
     rr = np.sqrt(rng.uniform(0, 1, n))
     th = rng.uniform(0, 2 * np.pi, n)
@@ -71,9 +71,9 @@ def test_knn_edges_two_clusters():
     X, sep = _two_clusters()
     ei, ew = T.knn_edges(X, k=4)
     assert ei.shape[1] == 2 and len(ei) > 0
-    # все рёбра внутри кластеров (веса << межкластерного расстояния)
-    assert ew.max() < sep / 2, f"межкластерное ребро: {ew.max()} vs sep={sep}"
-    # i < j в каждом ребре
+    # all edges are inside the clusters (weights << inter-cluster distance)
+    assert ew.max() < sep / 2, f"inter-cluster edge: {ew.max()} vs sep={sep}"
+    # i < j in each edge
     assert np.all(ei[:, 0] < ei[:, 1])
 
 
@@ -82,16 +82,16 @@ def test_h0_unionfind_two_clusters():
     n = X.shape[0]
     ei, ew = T.knn_edges(X, k=4)
     c = _n_components(n, ei)
-    assert c == 2, f"kNN-граф должен иметь 2 компоненты, а не {c}"
+    assert c == 2, f"kNN graph must have 2 components, not {c}"
     ivs = T.h0_intervals_unionfind(n, ei, ew)
-    # n - c конечных интервалов (по одному на успешное слияние) + c существенных
-    # (по одному на компоненту kNN-графа — совпадает со счётчиком GUDHI)
-    assert len(ivs) == n, f"len={len(ivs)}, ожидалось {n}"
+    # n - c finite intervals (one per successful merge) + c essential ones
+    # (one per component of the kNN graph — matches the GUDHI counter)
+    assert len(ivs) == n, f"len={len(ivs)}, expected {n}"
     finite = [d for _, d in ivs if np.isfinite(d)]
     assert len(finite) == n - c
-    # Семантика kNN-спарсификации: sep >> kNN-радиус, между кластерами рёбер НЕТ,
-    # поэтому компоненты никогда не сливаются — b_0 остаётся 2 на всех масштабах.
-    assert max(finite) < sep / 2, f"межкластерное слияние: {max(finite)}, sep={sep}"
+    # Semantics of kNN sparsification: sep >> kNN radius, there are NO edges between clusters,
+    # so the components never merge — b_0 stays 2 at all scales.
+    assert max(finite) < sep / 2, f"inter-cluster merge: {max(finite)}, sep={sep}"
     assert T.betti_at_scale(ivs, 0.5) == c
     assert T.betti_at_scale(ivs, sep + 1.0) == c
 
@@ -112,38 +112,38 @@ def test_topo_rank_two_clusters():
     ei, ew = T.knn_edges(X, k=4)
     h0 = T.h0_intervals_unionfind(X.shape[0], ei, ew)
     g = T.persistence_gudhi(X, k=4)
-    # В разреженном kNN VR между кластерами нет рёбер -> компоненты никогда не
-    # сливаются (семантика спарсификации): topo-rank остаётся 2 на всех масштабах.
-    assert T.topo_rank({"0": h0, "1": g["h1"]}, 0.5) == 2   # два компонента, нет циклов
+    # In a sparse kNN VR there are no edges between clusters -> components never
+    # merge (sparsification semantics): topo-rank stays 2 at all scales.
+    assert T.topo_rank({"0": h0, "1": g["h1"]}, 0.5) == 2   # two components, no cycles
     assert T.topo_rank({"0": h0, "1": g["h1"]}, 999.0) == 2
 
 
-# ── H_1: окружность vs конус ───────────────────────────────────
+# ── H_1: circle vs cone ───────────────────────────────────────
 
 def test_circle_h1():
-    # Полный VR (k = n-1 -> полный граф): на маленьком синтетическом облаке
-    # спарсификация не нужна; тогда цикл H_1 умирает при ~диаметре (диск
-    # заполняется). В kNN-спарсированном VR тот же класс становится essential
-    # (inf) — артефакт спарсификации, см. test_h0_unionfind_two_clusters.
+    # Full VR (k = n-1 -> complete graph): on a small synthetic cloud
+    # sparsification is not needed; then the H_1 cycle dies at ~diameter (the disk
+    # fills up). In a kNN-sparse VR the same class becomes essential
+    # (inf) — an artifact of sparsification, see test_h0_unionfind_two_clusters.
     X = _circle(n=64)
     g = T.persistence_gudhi(X, k=X.shape[0] - 1)
-    assert len(g["h1"]) > 0, "у окружности должен быть H_1-класс"
-    # цикл жив на среднем масштабе (NN spacing ~ 2*pi/64 ~ 0.1)
+    assert len(g["h1"]) > 0, "the circle must have an H_1 class"
+    # the cycle lives at intermediate scale (NN spacing ~ 2*pi/64 ~ 0.1)
     assert T.betti_at_scale(g["h1"], 0.5) == 1, f"h1={g['h1']}"
     max_pers = max(d - b for b, d in g["h1"] if np.isfinite(d))
-    assert max_pers > 0.5, f"персистентность цикла мала: {max_pers}"
+    assert max_pers > 0.5, f"cycle persistence is small: {max_pers}"
 
 
 def test_cone_contractible_vs_circle():
-    # Полный VR (k = n-1): у окружности один крупный конечный H_1-класс
-    # (персистентность ~ диаметр); конус контрактируем -> все H_1 короткие.
+    # Full VR (k = n-1): the circle has one large finite H_1 class
+    # (persistence ~ diameter); the cone is contractible -> all H_1 are short.
     Xc = _circle(n=64)
-    Xk = _cone(n=80)   # C(80,3)=82160 < лимита 300k треугольников
+    Xk = _cone(n=80)   # C(80,3)=82160 < the limit of 300k triangles
     gc = T.persistence_gudhi(Xc, k=Xc.shape[0] - 1)
     gk = T.persistence_gudhi(Xk, k=Xk.shape[0] - 1)
     pers_c = max((d - b for b, d in gc["h1"] if np.isfinite(d)), default=0.0)
     pers_k = max((d - b for b, d in gk["h1"] if np.isfinite(d)), default=0.0)
-    # конус контрактируем: H_1-персистентности заметно меньше, чем у окружности
+    # the cone is contractible: H_1 persistences are noticeably smaller than for the circle
     assert pers_c > 0.5 and pers_k < 0.3 * pers_c, f"cone={pers_k}, circle={pers_c}"
 
 
@@ -155,9 +155,9 @@ def test_w1_identical_zero():
 
 
 def test_w1_single_vs_empty():
-    # одна точка (b,d) против пустой диаграммы: падает в диагональ за p/2
+    # one point (b,d) against an empty diagram: falls to the diagonal at cost p/2
     v = T.wasserstein1([(0.0, 2.0)], [])
-    assert abs(v - 1.0) < 1e-9, f"W1={v}, ожидалось 1.0 (=p/2)"
+    assert abs(v - 1.0) < 1e-9, f"W1={v}, expected 1.0 (=p/2)"
 
 
 def test_w1_empty_vs_empty():
@@ -165,42 +165,42 @@ def test_w1_empty_vs_empty():
 
 
 def test_w1_triangle_sanity():
-    # A=(0,3), B=(1,4): L_inf=1; в диагональ обоим = 1.5+1.5=3 -> min = 1
+    # A=(0,3), B=(1,4): L_inf=1; both to the diagonal = 1.5+1.5=3 -> min = 1
     v = T.wasserstein1([(0.0, 3.0)], [(1.0, 4.0)])
     assert abs(v - 1.0) < 1e-9, f"W1={v}"
 
 
 def test_w1_trim_semantics():
-    # A: одна крупная (p=2) + 100 мелких (p=0.05); B: только крупная.
-    # После trim top-64: у A 64 точки, у B 1. Крупные совпадают (0),
-    # 63 лишних мелких падают в диагональ по p/2 = 0.025 -> W1 = 63*0.025.
-    # (Это стандартная семантика W_1: несопоставленные фичи стоят p/2.)
+    # A: one large (p=2) + 100 small ones (p=0.05); B: only the large one.
+    # After trim to top-64: A has 64 points, B has 1. The large ones match (0),
+    # the 63 extra small ones fall to the diagonal at p/2 = 0.025 -> W1 = 63*0.025.
+    # (This is standard W_1 semantics: unmatched features cost p/2.)
     A = [(0.0, 2.0)] + [(float(i) * 0.001, float(i) * 0.001 + 0.05) for i in range(100)]
     B = [(0.0, 2.0)]
     v = T.wasserstein1(A, B, k=64)
-    assert abs(v - 63 * 0.025) < 1e-9, f"W1={v}, ожидалось {63*0.025}"
+    assert abs(v - 63 * 0.025) < 1e-9, f"W1={v}, expected {63*0.025}"
 
 
 def test_w1_trim_drops_low_persistence_features():
-    # A: 100 фич с p_i = 0.01*(i+1); B: пусто. Каждая несопоставленная фича
-    # стоит p/2 -> без trim W1 = sum(p)/2; с top-64 учитываются только i>=37.
+    # A: 100 features with p_i = 0.01*(i+1); B: empty. Each unmatched feature
+    # costs p/2 -> without trim W1 = sum(p)/2; with top-64 only i>=37 are counted.
     A = [(float(i) * 0.5, float(i) * 0.5 + 0.01 * (i + 1)) for i in range(100)]
     B = []
     v_full = T.wasserstein1(A, B, k=10**6)
     v_trim = T.wasserstein1(A, B, k=64)
     p_all = [0.01 * (i + 1) for i in range(100)]
     exp_full = sum(p_all) / 2                      # 25.25
-    exp_trim = sum(sorted(p_all, reverse=True)[:64]) / 2   # top-64 по персистентности
+    exp_trim = sum(sorted(p_all, reverse=True)[:64]) / 2   # top-64 by persistence
     assert abs(v_full - exp_full) < 1e-9, f"full: {v_full} vs {exp_full}"
     assert abs(v_trim - exp_trim) < 1e-9, f"trim: {v_trim} vs {exp_trim}"
     assert v_trim < v_full
 
 
-# ── ранги (соглашения v5) ──────────────────────────────────────
+# ── ranks (v5 conventions) ─────────────────────────────────────
 
 def test_effective_rank_known():
-    # Плоский спектр: U @ V^T (случайные ортонормированные базы) -> ровно k единичных sigma.
-    # p_i = 1/k на каждом -> eff_rank = exp(H(uniform_k)) = точно k.
+    # Flat spectrum: U @ V^T (random orthonormal bases) -> exactly k unit sigmas.
+    # p_i = 1/k for each -> eff_rank = exp(H(uniform_k)) = exactly k.
     rng = np.random.default_rng(7)
     k, m, p_ = 12, 60, 40
     U, _ = np.linalg.qr(rng.normal(size=(m, k)))
@@ -208,12 +208,12 @@ def test_effective_rank_known():
     A = U @ V.T + rng.normal(size=(m, p_)) * 1e-9
     s = np.linalg.svd(A, compute_uv=False)
     er = T.effective_rank(s)
-    assert abs(er - k) < 0.5, f"eff_rank={er}, ожидалось ~{k}"
+    assert abs(er - k) < 0.5, f"eff_rank={er}, expected ~{k}"
 
 
 def test_effective_rank_flat_vs_spiky():
-    # Равномерный спектр (10 единичных sigma) -> eff_rank ~ 10;
-    # острый спектр (один большой sigma) -> eff_rank ~ 1.
+    # Uniform spectrum (10 unit sigmas) -> eff_rank ~ 10;
+    # spiky spectrum (one large sigma) -> eff_rank ~ 1.
     flat = np.ones(10)
     spiky = np.array([10.0] + [0.01] * 9)
     assert T.effective_rank(flat) > 8.0, f"flat: {T.effective_rank(flat)}"
@@ -232,7 +232,7 @@ def test_eps_star_two_clusters():
     assert 0 < eps < sep / 2, f"eps*={eps}, sep={sep}"
 
 
-# ── производительность на рабочем размере ─────────────────────
+# ── performance at working size ───────────────────────────────
 
 def test_persistence_runtime_workload_size():
     rng = np.random.default_rng(3)
@@ -243,16 +243,16 @@ def test_persistence_runtime_workload_size():
     assert len(g["h0"]) >= 1 and g["n_edges"] > 0
     print(f"    [runtime] persistence_gudhi n=256,d=32,k=32: {dt:.1f}s "
           f"(edges={g['n_edges']}, tris={g['n_triangles']})")
-    assert dt < 120, f"GUDHI слишком медленный для рабочей нагрузки: {dt:.1f}s"
+    assert dt < 120, f"GUDHI too slow for the workload: {dt:.1f}s"
 
 
-# ── логирование (Tee) ───────────────────────────────────────────
+# ── logging (Tee) ───────────────────────────────────────────────
 
 def test_tee_writes_to_all_streams():
     import io
     a, b = io.StringIO(), io.StringIO()
-    tda_log.Tee(a, b).write("привет\n")
-    assert a.getvalue() == "привет\n" and b.getvalue() == "привет\n"
+    tda_log.Tee(a, b).write("hello\n")
+    assert a.getvalue() == "hello\n" and b.getvalue() == "hello\n"
 
 
 def test_tee_survives_broken_stream():
@@ -263,7 +263,7 @@ def test_tee_survives_broken_stream():
             raise OSError("console gone")
 
     ok = io.StringIO()
-    tda_log.Tee(Broken(), ok).write("x\n")   # не должно падать
+    tda_log.Tee(Broken(), ok).write("x\n")   # must not crash
     assert ok.getvalue() == "x\n"
 
 

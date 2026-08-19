@@ -1,9 +1,9 @@
 """
-check_geometry.py — Геометрия активаций (конус, анизотропия, PCA).
-Без обучения. Результат → results/geometry_activations.json
+check_geometry.py — Activation geometry (cone, anisotropy, PCA).
+No training. Result → results/geometry_activations.json
 """
 
-# UTF-8 output для Windows консоли
+# UTF-8 output for the Windows console
 import sys; sys.stdout.reconfigure(encoding="utf-8") if hasattr(sys.stdout, "reconfigure") else None
 
 import json
@@ -29,7 +29,7 @@ TEXTS = [
     "Extreme compression is possible if the model contains significant redundancy or if its internal representations lie on a low-dimensional manifold.",
     "Transformers use self-attention mechanisms to capture long-range dependencies in sequential data without recurrent connections.",
     "Deep learning has revolutionized computer vision, speech recognition, and natural language processing through hierarchical feature learning.",
-    # Дополнительные тексты для достаточного количества сэмплов
+    # Additional texts to get a sufficient number of samples
     "The development of artificial neural networks was inspired by the structure of biological brains, where neurons are connected through synapses that can strengthen or weaken over time.",
     "Backpropagation is an algorithm for calculating gradients in neural networks by applying the chain rule of calculus to compute how each weight contributes to the final error.",
     "Recurrent neural networks process sequential data by maintaining a hidden state that captures information from previous time steps, enabling them to model temporal dependencies.",
@@ -52,11 +52,11 @@ def main():
     print("  CMQ — Activation Geometry")
     print("=" * 60)
 
-    # ── Загрузка модели (с прогрессом + ретраями) ──────────────
+    # ── Model loading (with progress + retries) ──────────────
     tokenizer, model = load_model_and_tokenizer()
 
     # ── Forward pass ───────────────────────────────────────────
-    print("\n[1/3]  Forward pass -> сбор активаций...")
+    print("\n[1/3]  Forward pass -> collecting activations...")
     enc = tokenizer(TEXTS, return_tensors="pt", padding=True, truncation=True, max_length=512).to(DEVICE)
 
     with torch.no_grad():
@@ -71,15 +71,15 @@ def main():
         torch.cuda.empty_cache()
 
     hidden_dim = h.shape[1]
-    print(f"       {h.shape[0]} токенов × {hidden_dim} dim")
+    print(f"       {h.shape[0]} tokens × {hidden_dim} dim")
 
-    # ── Сэмплирование ──────────────────────────────────────────
+    # ── Sampling ──────────────────────────────────────────
     n_samples = min(5000, h.shape[0])
     idx = np.random.choice(h.shape[0], size=n_samples, replace=h.shape[0] < n_samples)
     X = h[idx]
 
-    # ── Анизотропия ────────────────────────────────────────────
-    print("[2/3]  Анизотропия...")
+    # ── Anisotropy ────────────────────────────────────────────
+    print("[2/3]  Anisotropy...")
     norms = np.linalg.norm(X, axis=1, keepdims=True) + 1e-8
     Xn = X / norms
 
@@ -93,7 +93,7 @@ def main():
 
     # ── PCA ────────────────────────────────────────────────────
     print("[3/3]  PCA decomposition...")
-    max_comp = min(512, X.shape[0], X.shape[1])  # не больше сэмплов и фичей
+    max_comp = min(512, X.shape[0], X.shape[1])  # at most the number of samples and features
     from sklearn.decomposition import PCA
     pca = PCA(n_components=max_comp, svd_solver="full").fit(X)
 
@@ -105,7 +105,7 @@ def main():
     top10 = float(pca.explained_variance_ratio_[:max(1, max_comp // 10)].sum())
     top25 = float(pca.explained_variance_ratio_[:max(1, max_comp // 4)].sum())
 
-    # ── Результат ──────────────────────────────────────────────
+    # ── Result ──────────────────────────────────────────────
     cone = "[FIRE] strong" if anis_global > 0.8 else "[OK] moderate" if anis_global > 0.5 else "[WARN] weak" if anis_global > 0.2 else "[FAIL] isotropic"
 
     result = {

@@ -43,9 +43,9 @@ sys.path.insert(0, str(BASE_DIR))
 import tda_core as T                                 # noqa: E402
 import tda_log                                       # noqa: E402
 
-K_NN = 32            # разреженность VR (план: kNN вместо полного O(n^2))
-SAMPLE = 512         # точек на облако для персистентности (план: 512, не 2048)
-W1_TRIM = 64         # top-K интервалов для W_1
+K_NN = 32            # VR sparsity (plan: kNN instead of full O(n^2))
+SAMPLE = 512         # points per cloud for persistence (plan: 512, not 2048)
+W1_TRIM = 64         # top-K intervals for W_1
 SEED = 42
 
 
@@ -60,7 +60,7 @@ def _sample(X: np.ndarray, n: int, seed: int = SEED) -> np.ndarray:
 
 
 def _cosine_rows(A: np.ndarray, B: np.ndarray) -> float:
-    """Средний построчный косинус pre vs post (аналог 'per-layer cosine 0.85')."""
+    """Mean per-row cosine pre vs post (analog of 'per-layer cosine 0.85')."""
     na = np.linalg.norm(A, axis=1)
     nb = np.linalg.norm(B, axis=1)
     denom = np.maximum(na * nb, 1e-12)
@@ -68,11 +68,11 @@ def _cosine_rows(A: np.ndarray, B: np.ndarray) -> float:
 
 
 def _act2d(t: torch.Tensor) -> np.ndarray:
-    """Активации блока -> (N, d) float64. Старые .pt хранят (B=1, N, d) —
-    batch-меру убираем; новые collect сразу пишут (N, d)."""
+    """Block activations -> (N, d) float64. Old .pt files store (B=1, N, d) —
+    we drop the batch dim; new collect writes (N, d) directly."""
     X = t.numpy()
     if X.ndim == 3:
-        assert X.shape[0] == 1, f"неожиданный batch={X.shape[0]}"
+        assert X.shape[0] == 1, f"unexpected batch={X.shape[0]}"
         X = X[0]
     return np.ascontiguousarray(X, dtype=np.float64)
 
@@ -90,7 +90,7 @@ def main():
 
     model_tag = data_file.stem.removeprefix("tda_activations_") or data_file.stem
     _log_file = tda_log.start_logging(
-        tda_log.log_file_for("analyze", model_tag))  # noqa: F841 (дожитие до конца процесса)
+        tda_log.log_file_for("analyze", model_tag))  # noqa: F841 (keeps the file alive until process exit)
 
     print(f"Loading {data_file} ...")
     payload = torch.load(data_file, map_location="cpu", weights_only=False)
@@ -111,7 +111,7 @@ def main():
         print(f"PPL baseline={ppl.get('baseline')} compressed={ppl.get('compressed')} "
               f"ratio={ppl.get('ratio')}")
 
-    # ── по блокам: персистентность pre/post + метрики ───────────────
+    # ── per block: persistence pre/post + metrics ───────────────────
     rows = []
     h0_crosscheck_bad = 0
     for i, name in enumerate(blocks):
@@ -122,7 +122,7 @@ def main():
         eps_p = T.eps_star(X_pre)
         eps_q = T.eps_star(X_post)
 
-        # H_0: union-find (точная) + GUDHI (кроссчек на eps*)
+        # H_0: union-find (exact) + GUDHI (cross-check at eps*)
         ei, ew = T.knn_edges(X_pre, K_NN)
         h0_u_pre = T.h0_intervals_unionfind(X_pre.shape[0], ei, ew)
         ej, ewj = T.knn_edges(X_post, K_NN)
@@ -159,7 +159,7 @@ def main():
         print(f"  [{i+1}/{n_blocks}] {name}: b0 {b0p}->{b0q} | b1 {b1p}->{b1q} | "
               f"topo-rank {tr_pre}->{tr_post} | W1(H1)={w1_h1:.4f} | cos={cos_mean:.4f}")
 
-    # ── по весам: effective rank / d90 до и после (соглашения v5) ───
+    # ── per weights: effective rank / d90 before and after (v5 conventions) ───
     def _agg(names):
         eff_p, eff_q, d90_p, d90_q = [], [], [], []
         for n in names:
@@ -182,7 +182,7 @@ def main():
     mlp_names = [n for n in all_names if "mlp" in n or "down_proj" in n]
     w_all, w_attn, w_mlp = _agg(all_names), _agg(attn_names), _agg(mlp_names)
 
-    # ── CSV (ровно один из 5 артефактов) ────────────────────────────
+    # ── CSV (exactly one of the 5 artifacts) ────────────────────────
     csv_file = out_dir / f"tda_layer_table_{model}.csv"
     fields = ["item", "kind", "n_layers",
               "eps_star_pre", "eps_star_post",
@@ -203,7 +203,7 @@ def main():
             w.writerow(row)
     print(f"CSV: {csv_file}")
 
-    # ── вердикт ─────────────────────────────────────────────────────
+    # ── verdict ─────────────────────────────────────────────────────
     cos_arr = np.array([r["cos_mean"] for r in rows])
     w1h1_arr = np.array([r["w1_h1"] for r in rows])
     b1_drop = int(sum(1 for r in rows if r["b1_post"] < r["b1_pre"]))
@@ -219,19 +219,19 @@ def main():
     corr_w1_cos = _corr(w1h1_arr, 1.0 - cos_arr)
     verdict_bits = []
     if cos_arr.mean() > 0.95:
-        verdict_bits.append("средний косинус pre/post высокий (>0.95): направление потоков почти не изменилось")
+        verdict_bits.append("mean pre/post cosine is high (>0.95): flow directions barely changed")
     else:
-        verdict_bits.append(f"средний косинус pre/post {cos_arr.mean():.3f}: заметное изменение направлений")
+        verdict_bits.append(f"mean pre/post cosine {cos_arr.mean():.3f}: noticeable change in directions")
     if b1_gain > 2 * max(b1_drop, 1) and w1h1_arr.mean() > 0:
-        verdict_bits.append("после сжатия появляются новые H_1-циклы (b1_gain > b1_drop): топология НЕ просто 'стала проще'")
+        verdict_bits.append("new H_1 cycles appear after compression (b1_gain > b1_drop): topology is NOT simply 'getting simpler'")
     elif b1_drop > 2 * max(b1_gain, 1):
-        verdict_bits.append("H_1-циклов после сжатия меньше: топология упрощается/вырождается")
+        verdict_bits.append("fewer H_1 cycles after compression: topology simplifies/degenerates")
     else:
-        verdict_bits.append("число H_1-циклов при eps* примерно сохранено")
+        verdict_bits.append("the number of H_1 cycles at eps* is approximately preserved")
     if w_all["eff_rank_med_post"] < 0.8 * w_all["eff_rank_med_pre"]:
-        verdict_bits.append(f"effective rank весов упал (med {w_all['eff_rank_med_pre']} -> {w_all['eff_rank_med_post']})")
+        verdict_bits.append(f"weight effective rank dropped (med {w_all['eff_rank_med_pre']} -> {w_all['eff_rank_med_post']})")
     else:
-        verdict_bits.append(f"effective rank весов почти не изменился (med {w_all['eff_rank_med_pre']} -> {w_all['eff_rank_med_post']}) — остаточная квантизация держит 'хвост' спектра")
+        verdict_bits.append(f"weight effective rank barely changed (med {w_all['eff_rank_med_pre']} -> {w_all['eff_rank_med_post']}) — residual quantization holds the 'tail' of the spectrum")
 
     # ── JSON summary ────────────────────────────────────────────────
     summary = {
@@ -259,7 +259,7 @@ def main():
         },
         "weights": {"all": w_all, "attn": w_attn, "mlp": w_mlp},
         "correlations_honest_proxy": {
-            "note": "W_1(H1) vs (1-cosine) по блокам — прокси 'топологическое изменение <-> потеря выравнивания'; delta-PPL на блок не измерялся",
+            "note": "W_1(H1) vs (1-cosine) per block — proxy for 'topological change <-> alignment loss'; per-block delta-PPL was not measured",
             "pearson_w1h1_vs_1minus_cos": corr_w1_cos,
         },
         "verdict_bits": verdict_bits,
@@ -278,7 +278,7 @@ def main():
     fig.suptitle(f"TDA of CHMC v6 compression — {model} (BPW={payload['config'].get('bit_budget_bpw')})",
                  fontsize=13)
 
-    # (a) H_0 diagram pre/post, средний блок
+    # (a) H_0 diagram pre/post, middle block
     ax = axes[0][0]
     mid = n_blocks // 2
     Xp_mid = _sample(_act2d(pre_t[mid]), SAMPLE)
@@ -296,7 +296,7 @@ def main():
     ax.set_title(f"(a) H0 persistence diagram, block {blocks[mid]} (essential class excluded)")
     ax.legend(fontsize=8)
 
-    # (b) b1(eps*) pre vs post по блокам
+    # (b) b1(eps*) pre vs post per block
     ax = axes[0][1]
     xs = np.arange(n_blocks)
     ax.bar(xs - 0.2, [r["b1_pre"] for r in rows], width=0.4, color="tab:blue", label="b1 pre")
@@ -305,7 +305,7 @@ def main():
     ax.set_title("(b) H1 Betti at eps* per block (pre vs post)")
     ax.legend(fontsize=8)
 
-    # (c) W1(H1) + cosine по блокам
+    # (c) W1(H1) + cosine per block
     ax = axes[1][0]
     ax.bar(xs, w1h1_arr, color="tab:red", alpha=0.6, label="W1(H1)")
     ax.set_xlabel("block index"); ax.set_ylabel("W1(H1), trimmed top-64", color="tab:red")
@@ -314,7 +314,7 @@ def main():
     ax2.set_ylabel("mean cosine", color="tab:green")
     ax.set_title("(c) topology change (W1 H1) vs alignment loss (cosine)")
 
-    # (d) effective rank весов pre vs post
+    # (d) weight effective rank pre vs post
     ax = axes[1][1]
     er_pre = [T.effective_rank(sv_pre[n].numpy().astype(np.float64)) for n in all_names]
     er_post = [T.effective_rank(sv_post[n].numpy().astype(np.float64)) for n in all_names]
@@ -337,7 +337,7 @@ def main():
     plt.close(fig)
     print(f"PNG: {png_file}")
 
-    # ── отчёт (MD) ──────────────────────────────────────────────────
+    # ── report (MD) ────────────────────────────────────────────────
     md_lines = _build_report(payload, rows, w_all, w_attn, w_mlp, summary, corr_w1_cos)
     md_file = out_dir / f"tda_report_{model}.md"
     with open(md_file, "w", encoding="utf-8") as f:
@@ -348,7 +348,7 @@ def main():
     for v in verdict_bits:
         print(" -", v)
     if corr_w1_cos is not None:
-        print(f" - corr(W1(H1), 1-cos) = {corr_w1_cos:.3f} (честный прокси, не delta-PPL)")
+        print(f" - corr(W1(H1), 1-cos) = {corr_w1_cos:.3f} (honest proxy, not delta-PPL)")
 
 
 def _build_report(payload, rows, w_all, w_attn, w_mlp, summary, corr):
@@ -362,68 +362,68 @@ def _build_report(payload, rows, w_all, w_attn, w_mlp, summary, corr):
     b1q_tot = sum(r["b1_post"] for r in rows)
 
     L = []
-    L.append(f"# TDA-анализ сжатия CHMC v6 — {model}")
+    L.append(f"# TDA analysis of CHMC v6 compression — {model}")
     L.append("")
-    L.append("## Что и зачем")
+    L.append("## What and why")
     L.append("")
-    L.append(f"Проверка гипотезы из плана 'Топологический путь': квантизация Q: R^d -> дискретная сетка "
-             f"может ломать топологию манифольда активаций, даже когда MSE низкий. Сравниваем персистентную "
-             f"топологию блок-активаций (residual stream) и спектр весов ДО/ПОСЛЕ сжатия CHMC v6 при равном "
-             f"BPW={cfg.get('bit_budget_bpw')} (конфиг: strict_sequential={cfg.get('strict_sequential')}, "
+    L.append(f"Testing the hypothesis from the 'topological path' plan: quantization Q: R^d -> discrete grid "
+             f"can break the topology of the activation manifold even when MSE is low. We compare persistent "
+             f"topology of block activations (residual stream) and weight spectra BEFORE/AFTER CHMC v6 compression at equal "
+             f"BPW={cfg.get('bit_budget_bpw')} (config: strict_sequential={cfg.get('strict_sequential')}, "
              f"dampening={cfg.get('dampening')}).")
     L.append("")
     if ppl:
         L.append(f"PPL baseline={ppl.get('baseline'):.4f} -> compressed={ppl.get('compressed'):.4f} "
-                 f"(ratio {ppl.get('ratio'):.6f}) — из того же прогона, что и данные.")
+                 f"(ratio {ppl.get('ratio'):.6f}) — from the same run as the data.")
         L.append("")
-    L.append("## Методика и оговорки")
+    L.append("## Methodology and caveats")
     L.append("")
-    L.append(f"- VR-комплекс разрежен: kNN-граф (k={K_NN}), треугольники = клики размера 3; полный O(n^2) VR не строился.")
-    L.append("- Семантика спарсификации: фичи, которые в полном VR умерли бы на масштабах за пределами kNN-радиуса, в разреженном комплексе НЕ имеют симплексов, их убивающих, -> становятся существенными (death=inf) и учитываются в b_k(eps*). Pre/post считаются в одних условиях, поэтому сравнение корректно; W_1 существенные классы исключает.")
-    L.append(f"- Персистентность считалась на {SAMPLE} точках (детерминированная выборка, seed=42), а не на всех токенах — смещение к крупным структурам, приемлемо для сравнения pre/post в одних условиях.")
-    L.append("- eps* = медианное расстояние до ближайшего соседа в облаке; Betti и topo-rank читаются при s=eps*.")
-    L.append(f"- W_1 — точный расчёт на обрезанных диаграммах (top-{W1_TRIM} по персистентности, L_inf); существенные H_0-классы (death=inf) исключены до расчёта.")
-    L.append("- H_0: union-find (точно) + кроссчек GUDHI; H_1: GUDHI SimplexTree (filtration = max веса вершин/рёбер).")
-    L.append(f"- effective_rank/d90 — соглашения v5 (generate_cov_stats.py, rank_gap.py): exp-энтропия нормализованных sigma^2. Числа сопоставимы с ранними замерами (min eff-rank ~17, median ~60).")
-    L.append("- Ограничение: W_1 и Betti — метрики на БЛОК-активациях; связь с delta-PPL не прямая, корреляции ниже — честный прокси.")
+    L.append(f"- The VR complex is sparse: kNN graph (k={K_NN}), triangles = cliques of size 3; a full O(n^2) VR was not built.")
+    L.append("- Sparsification semantics: features that would die in the full VR at scales beyond the kNN radius have NO killing simplices in the sparse complex -> they become essential (death=inf) and are counted in b_k(eps*). Pre/post are computed under identical conditions, so the comparison is valid; W_1 excludes essential classes.")
+    L.append(f"- Persistence was computed on {SAMPLE} points (deterministic sample, seed=42), not all tokens — bias toward large-scale structures, acceptable for a pre/post comparison under identical conditions.")
+    L.append("- eps* = median nearest-neighbour distance in the cloud; Betti and topo-rank are read at s=eps*.")
+    L.append(f"- W_1 — exact computation on trimmed diagrams (top-{W1_TRIM} by persistence, L_inf); essential H_0 classes (death=inf) excluded before computation.")
+    L.append("- H_0: union-find (exact) + GUDHI cross-check; H_1: GUDHI SimplexTree (filtration = max of vertex/edge weights).")
+    L.append(f"- effective_rank/d90 — v5 conventions (generate_cov_stats.py, rank_gap.py): exp-entropy of normalized sigma^2. Numbers are comparable to the early measurements (min eff-rank ~17, median ~60).")
+    L.append("- Limitation: W_1 and Betti are metrics on BLOCK activations; the link to delta-PPL is not direct, the correlations below — an honest proxy.")
     L.append("")
-    L.append("## Ключевые числа")
+    L.append("## Key numbers")
     L.append("")
-    L.append("| Метрика | pre | post |")
+    L.append("| Metric | pre | post |")
     L.append("|---|---|---|")
-    L.append(f"| Средний косинус pre/post (по блокам) | — | {cos_arr.mean():.4f} |")
-    L.append(f"| W_1(H0), среднее по блокам | — | {w1h0:.5f} |")
-    L.append(f"| W_1(H1), среднее по блокам | — | {w1h1:.5f} |")
-    L.append(f"| Сумма b_1(eps*) по блокам | {b1p_tot} | {b1q_tot} |")
-    L.append(f"| Effective rank весов, median (все слои) | {w_all['eff_rank_med_pre']} | {w_all['eff_rank_med_post']} |")
-    L.append(f"| Effective rank весов, min (все слои) | {w_all['eff_rank_min_pre']} | {w_all['eff_rank_min_post']} |")
-    L.append(f"| d90 весов, median (все слои) | {w_all['d90_med_pre']} | {w_all['d90_med_post']} |")
+    L.append(f"| Mean cosine pre/post (per block) | — | {cos_arr.mean():.4f} |")
+    L.append(f"| W_1(H0), mean over blocks | — | {w1h0:.5f} |")
+    L.append(f"| W_1(H1), mean over blocks | — | {w1h1:.5f} |")
+    L.append(f"| Sum of b_1(eps*) over blocks | {b1p_tot} | {b1q_tot} |")
+    L.append(f"| Effective rank of weights, median (all layers) | {w_all['eff_rank_med_pre']} | {w_all['eff_rank_med_post']} |")
+    L.append(f"| Effective rank of weights, min (all layers) | {w_all['eff_rank_min_pre']} | {w_all['eff_rank_min_post']} |")
+    L.append(f"| d90 of weights, median (all layers) | {w_all['d90_med_pre']} | {w_all['d90_med_post']} |")
     L.append("")
-    L.append("По attn: eff-rank med "
-             f"{w_attn['eff_rank_med_pre']} -> {w_attn['eff_rank_med_post']}; по mlp: "
+    L.append("For attn: eff-rank med "
+             f"{w_attn['eff_rank_med_pre']} -> {w_attn['eff_rank_med_post']}; for mlp: "
              f"{w_mlp['eff_rank_med_pre']} -> {w_mlp['eff_rank_med_post']}.")
     L.append("")
     if corr is not None:
-        L.append(f"Корреляция Пирсона W_1(H1) vs (1 - cosine) по блокам: **{corr:.3f}**.")
+        L.append(f"Pearson correlation of W_1(H1) vs (1 - cosine) per block: **{corr:.3f}**.")
         L.append("")
-    L.append("## Вердикт")
+    L.append("## Verdict")
     L.append("")
     for v in summary["verdict_bits"]:
         L.append(f"- {v}")
     L.append("")
-    L.append("**Чтение:** если косинусы высокие, а W_1(H1) и новые циклы есть — компрессия сохраняет "
-             "направление потока, но перестраивает тонкую топологическую структуру (циклы/компоненты при eps*). "
-             "Если effective rank весов почти не упал — остаточная 4-bit квантизация заполняет весь спектр шумом: "
-             "'топологическая компрессия' на весах НЕ произошла, сжатие реально несёт только low-rank часть. "
-             "Это и есть формализация разрыва 'MSE низкий, но PPL растёт': метрики, нечувствительные к топологии/спектру, пропускают эту деградацию.")
+    L.append("**Reading:** if the cosines are high while W_1(H1) and new cycles are present — compression preserves "
+             "the flow direction but restructures the fine topological structure (cycles/components at eps*). "
+             "If the effective rank of weights barely dropped — residual 4-bit quantization fills the whole spectrum with noise: "
+             "'topological compression' of the weights did NOT happen, the compressed part actually carries only the low-rank component. "
+             "This is exactly a formalization of the 'MSE is low but PPL grows' gap: metrics insensitive to topology/spectrum miss this degradation.")
     L.append("")
-    L.append("## Файлы (ровно 5 артефактов на модель в results_v6/tda_analysis/)")
+    L.append("## Files (exactly 5 artifacts per model in results_v6/tda_analysis/)")
     L.append("")
-    L.append(f"1. tda_activations_{model}.pt — сырые данные (блок-активации pre/post, SVD весов до/после, ranks, PPL)")
-    L.append(f"2. tda_layer_table_{model}.csv — таблица по блокам + агрегаты весов")
-    L.append(f"3. tda_summary_{model}.json — агрегаты, методика, вердикт (машиночитаемый)")
-    L.append(f"4. tda_diagrams_{model}.png — 4 панели: H0-диаграммы, b_1(eps*) по блокам, W_1(H1)+косинус, eff-rank весов")
-    L.append(f"5. tda_report_{model}.md — этот отчёт")
+    L.append(f"1. tda_activations_{model}.pt — raw data (block activations pre/post, SVD of weights before/after, ranks, PPL)")
+    L.append(f"2. tda_layer_table_{model}.csv — per-block table + weight aggregates")
+    L.append(f"3. tda_summary_{model}.json — aggregates, methodology, verdict (machine-readable)")
+    L.append(f"4. tda_diagrams_{model}.png — 4 panels: H0 diagrams, b_1(eps*) per block, W_1(H1)+cosine, weight eff-rank")
+    L.append(f"5. tda_report_{model}.md — this report")
     L.append("")
     return L
 

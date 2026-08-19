@@ -1,8 +1,8 @@
 """
-model_loader.py — общий модуль загрузки модели с:
-  • tqdm прогресс-бар (байты + %)
-  • watchdog на скорость (ретраит если < 50 KB/s дольше 30s)
-  • автовосстановление при network reset / timeout (до 3 попыток)
+model_loader.py — shared model-loading module with:
+  • tqdm progress bar (bytes + %)
+  • speed watchdog (retries if the speed stays below 50 KB/s for more than 30s)
+  • automatic recovery on network reset / timeout (up to 3 attempts)
 """
 
 import os
@@ -27,7 +27,7 @@ DTYPE = torch.float32 if DEVICE == "cpu" else torch.bfloat16
 
 
 def _get_hf_cache_dir() -> Optional[Path]:
-    """Найти модель в HF cache (snapshot directory)."""
+    """Find the model in the HF cache (snapshot directory)."""
     try:
         from huggingface_hub import hf_hub_download
         cached_file = hf_hub_download(
@@ -42,8 +42,8 @@ def _get_hf_cache_dir() -> Optional[Path]:
 
 
 def _find_model_source() -> Optional[Path]:
-    """Найти модель: 1) local dir → 2) HF cache."""
-    # 1. Локальная копия
+    """Find the model: 1) local dir → 2) HF cache."""
+    # 1. Local copy
     if _model_exists(LOCAL_DIR):
         print(f"[model] [OK] Local copy: {LOCAL_DIR}")
         return LOCAL_DIR
@@ -58,10 +58,10 @@ def _find_model_source() -> Optional[Path]:
 
 
 # ──────────────────────────────────────────────────────────────────────
-# Speed watchdog — мониторит скорость скачивания в отдельном потоке
+# Speed watchdog — monitors the download speed in a separate thread
 # ──────────────────────────────────────────────────────────────────────
 class SpeedWatchdog:
-    """Если скорость < min_kbps дольше patience сек → поднимает флаг stall."""
+    """If the speed stays below min_kbps for more than patience seconds → raise the stall flag."""
 
     def __init__(self, min_kbps=50.0, patience_s=30):
         self.min_kbps = min_kbps
@@ -73,12 +73,12 @@ class SpeedWatchdog:
     def record(self, downloaded_bytes: int):
         with self._lock:
             self._history.append((time.monotonic(), downloaded_bytes))
-            # Храним только последние 60 секунд
+            # Keep only the last 60 seconds
             cutoff = time.monotonic() - self.patience - 10
             self._history = [(t, b) for t, b in self._history if t > cutoff]
 
     def check(self):
-        """Проверить stall. Если скорость < threshold → stalled=True."""
+        """Check for a stall. If speed < threshold → stalled=True."""
         with self._lock:
             if len(self._history) < 2:
                 return False
@@ -95,10 +95,10 @@ class SpeedWatchdog:
 
 
 # ──────────────────────────────────────────────────────────────────────
-# Progress bar callback для huggingface_hub
+# Progress bar callback for huggingface_hub
 # ──────────────────────────────────────────────────────────────────────
 class HFProgressBar:
-    """Обёртка над tqdm для huggingface_hub download callbacks."""
+    """Wrapper around tqdm for the huggingface_hub download callbacks."""
 
     def __init__(self, watchdog: SpeedWatchdog):
         self._bars = {}   # {file_id: tqdm instance}
@@ -129,10 +129,10 @@ class HFProgressBar:
 
 
 # ──────────────────────────────────────────────────────────────────────
-# Загрузка модели с ретраями
+# Model loading with retries
 # ──────────────────────────────────────────────────────────────────────
 def _model_exists(local_dir: Path) -> bool:
-    """Проверка что модель целая (safetensors + config)."""
+    """Check that the model is complete (safetensors + config)."""
     has_weights = any(local_dir.glob("*.safetensors")) or any(local_dir.glob("pytorch_model.bin"))
     return has_weights and (local_dir / "config.json").exists()
 
@@ -143,12 +143,12 @@ def load_model(
     max_retries: int = 3,
 ) -> AutoModelForCausalLM:
     """
-    Загрузить модель с прогресс-баром и автовосстановлением.
+    Load the model with a progress bar and automatic recovery.
 
-    Ищет модель: 1) local dir → 2) HF cache → 3) скачивает при необходимости.
-    При network error / stall → автоматический ретраит с exponential backoff.
+    Looks for the model: 1) local dir → 2) HF cache → 3) downloads it if necessary.
+    On a network error / stall → automatic retry with exponential backoff.
     """
-    # Сначала попробуй найти существующую копию (local или HF cache)
+    # First try to find an existing copy (local or HF cache)
     source_path = _find_model_source()
 
     if source_path is None:
@@ -160,12 +160,12 @@ def load_model(
             wd = SpeedWatchdog(min_kbps=50.0, patience_s=30)
             bar_cb = HFProgressBar(wd)
 
-            # Запускаем watchdog в фоне
+            # Start the watchdog in the background
             wd_thread = threading.Thread(target=_watchdog_loop, args=(wd,), daemon=True)
             wd_thread.start()
 
             if source_path:
-                # Локальная загрузка из кэша — быстро, без прогресса
+                # Local load from the cache — fast, no progress reporting
                 print(f"[model] Loading from {source_path.name}...")
                 model = AutoModelForCausalLM.from_pretrained(
                     str(source_path),
@@ -173,7 +173,7 @@ def load_model(
                     device_map=DEVICE,
                 )
             else:
-                # HF download с прогрессом
+                # HF download with progress
                 model = AutoModelForCausalLM.from_pretrained(
                     model_name,
                     torch_dtype=DTYPE,
@@ -215,7 +215,7 @@ def load_model(
 
 
 def _watchdog_loop(wd: SpeedWatchdog, interval_s=5):
-    """Фоновый поток — проверяет stall каждые interval_s секунд."""
+    """Background thread — checks for a stall every interval_s seconds."""
     while True:
         time.sleep(interval_s)
         if wd.check():
@@ -226,7 +226,7 @@ def load_tokenizer(
     model_name: str = DEFAULT_MODEL,
     local_dir: Optional[Path] = None,
 ) -> AutoTokenizer:
-    """Загрузить токенизатор (быстро, без весов)."""
+    """Load the tokenizer (fast, no weights)."""
     source_path = _find_model_source()
     source = str(source_path) if source_path else model_name
     tok = AutoTokenizer.from_pretrained(source, resume_download=True)
@@ -240,7 +240,7 @@ def load_model_and_tokenizer(
     local_dir: Optional[Path] = None,
     max_retries: int = 3,
 ):
-    """Загрузить модель + токенизатор."""
+    """Load model + tokenizer."""
     tok = load_tokenizer(model_name, local_dir)
     mdl = load_model(model_name, local_dir, max_retries)
     return tok, mdl

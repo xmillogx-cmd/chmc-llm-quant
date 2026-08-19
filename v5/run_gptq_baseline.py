@@ -3,17 +3,17 @@
 run_gptq_baseline.py — GPTQ/AWQ baselines (library-only)
 =========================================================
 
-Сравнение CHMC с индустриальными методами (только библиотеки):
+Comparison of CHMC with industrial methods (libraries only):
   - GPTQ 4-bit (GPTQModel)
-  - AutoGPTQ 4-bit (если установлена)
-  - AWQ 4-bit (если установлена)
+  - AutoGPTQ 4-bit (if installed)
+  - AWQ 4-bit (if installed)
 
-Ручная реализация GPTQ удалена: формула компенсации
-W[:,j+1:] -= err·(H_diag[j+1:]/H_diag[j]) не выводится из GPTQ и давала
-PPL 1e8+. Работаем только с библиотечной GPTQ (GPTQModel).
+The manual GPTQ implementation was removed: the compensation formula
+W[:,j+1:] -= err·(H_diag[j+1:]/H_diag[j]) is not derived from GPTQ and gave
+PPL of 1e8+. We work only with library-based GPTQ (GPTQModel).
 
-Критерий приёмки:
-  GPTQ/AWQ PPL ratio < 2.0x для обеих моделей
+Acceptance criterion:
+  GPTQ/AWQ PPL ratio < 2.0x for both models
 
 Usage:
     python v5/run_gptq_baseline.py --model models/smollm-135m models/qwen2.5-0.5b

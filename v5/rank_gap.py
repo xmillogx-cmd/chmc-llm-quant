@@ -3,16 +3,16 @@
 rank_gap.py — Activation vs Weight rank gap analysis (BUG-5 fix)
 ================================================================
 
-Проблема v4: cov_stats показывает eff_rank=1.0 для активаций, но SVD весов
-показывает min effective_rank=29. Почему такое расхождение?
+v4 problem: cov_stats shows eff_rank=1.0 for activations, but SVD of weights
+shows min effective_rank=29. Why is there such a discrepancy?
 
-Анализ:
-  1. Effective rank ВЕСОВ (SVD самой матрицы W)
-  2. Effective rank АКТИВАЦИЙ (SVD ковариации входов X)
-  3. Effective rank ВЗВЕШЕННОЙ матрицы (W * sqrt(diag(XX^T)))
+Analysis:
+  1. Effective rank of WEIGHTS (SVD of the matrix W itself)
+  2. Effective rank of ACTIVATIONS (SVD of input covariance X)
+  3. Effective rank of the WEIGHTED matrix (W * sqrt(diag(XX^T)))
 
-Если activation_rank << weight_rank, можно использовать меньший ранг для сжатия
-без потери качества — активации живут в низкоразмерном подпространстве.
+If activation_rank << weight_rank, we can use a smaller rank for compression
+without quality loss — activations live in a low-dimensional subspace.
 
 Usage:
     python v5/rank_gap.py --model models/smollm-135m

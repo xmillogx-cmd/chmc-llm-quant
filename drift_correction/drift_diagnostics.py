@@ -52,25 +52,25 @@ sys.path.insert(0, str(ROOT_DIR / "tda_analysis"))  # tda_log
 
 import tda_log                                       # noqa: E402
 
-TOP_K = 32           # сколько компонент спектра хранить/рисовать
-CONE_TOP = 10        # конусный базис для overlap-метрик
-D90_PASS = 30        # критерий приёмки
-D90_STOP = 50        # жёсткое правило: > 50 -> гипотеза неверна, STOP
+TOP_K = 32           # how many spectrum components to store/plot
+CONE_TOP = 10        # cone basis for the overlap metrics
+D90_PASS = 30        # acceptance criterion
+D90_STOP = 50        # hard rule: > 50 -> hypothesis wrong, STOP
 OVERLAP_PASS = 0.5
 OVERLAP_STOP = 0.3
 
 
 def _act2d(t: torch.Tensor) -> np.ndarray:
-    """Активации блока -> (N, d) float64. Старые .pt хранят (B=1, N, d)."""
+    """Block activations -> (N, d) float64. Old .pt files store (B=1, N, d)."""
     X = t.numpy()
     if X.ndim == 3:
-        assert X.shape[0] == 1, f"неожиданный batch={X.shape[0]}"
+        assert X.shape[0] == 1, f"unexpected batch={X.shape[0]}"
         X = X[0]
     return np.ascontiguousarray(X, dtype=np.float64)
 
 
 def _pca_svd(Xc: np.ndarray):
-    """SVD центрированной (N x d). Возвращает (s, V), V — оси в R^d (d x r)."""
+    """SVD of the centered (N x d) matrix. Returns (s, V); V are axes in R^d (d x r)."""
     _, s, Vt = np.linalg.svd(Xc, full_matrices=False)
     return s, Vt.T
 
@@ -81,13 +81,13 @@ def _energy_fractions(s: np.ndarray) -> np.ndarray:
 
 
 def _d90(frac: np.ndarray) -> int:
-    """Минимальное k с cumsum(frac)[:k] >= 0.90 (1-based)."""
+    """Minimal k with cumsum(frac)[:k] >= 0.90 (1-based)."""
     c = np.cumsum(frac)
     return int(np.searchsorted(c, 0.90) + 1)
 
 
 def _eff_rank(frac: np.ndarray) -> float:
-    """v5-соглашение: exp(энтропии нормализованных долей)."""
+    """v5 convention: exp(entropy of the normalized shares)."""
     p = frac[frac > 0]
     return float(np.exp(-(p * np.log(p)).sum()))
 
@@ -101,16 +101,16 @@ def analyze_block(pre: np.ndarray, post: np.ndarray) -> dict:
     fr_d = _energy_fractions(s_d)
     d90_drift = _d90(fr_d)
 
-    # конусный базис из pre-активаций того же блока
+    # cone basis from the same block's pre-activations
     s_c, Vc = _pca_svd(pre - pre.mean(axis=0))
     fr_c = _energy_fractions(s_c)
     d90_cone = _d90(fr_c)
 
-    # overlap: знак PCA-осей произволен -> модуль косинуса
+    # overlap: PCA axis signs are arbitrary -> absolute cosine
     M = np.abs(Vd[:, :CONE_TOP].T @ Vc[:, :CONE_TOP])   # (10 x 10)
     cone_axis_overlap = float(M[0, 0])
-    # energy-weighted best-match: направления с нулевой энергией (при малом d90 их
-    # ориентация произвольна) не должны вносить шум -> весим долями энергии drift-PCA
+    # energy-weighted best-match: zero-energy directions (their orientation is arbitrary
+    # when d90 is small) must not add noise -> weight by the drift-PCA energy shares
     w = fr_d[:CONE_TOP]
     top10_cone_overlap = float((w * M.max(axis=1)).sum() / max(w.sum(), 1e-12))
 
@@ -118,8 +118,8 @@ def analyze_block(pre: np.ndarray, post: np.ndarray) -> dict:
     nd = np.linalg.norm(D, axis=1)
     rel_disp = float(nd.mean() / np.maximum(na.mean(), 1e-12))
 
-    # cone capture: доля энергии дрейфа в span(top-30 конусных направлений) —
-    # верхняя оценка того, что мог бы захватить идеализованный ДW = E·V·Vᵀ (k=30)
+    # cone capture: fraction of drift energy in span(top-30 cone directions) —
+    # an upper estimate of what an idealized ΔW = E·V·Vᵀ (k=30) could capture
     proj30 = Dc @ Vc[:, :30]
     cone_capture_30 = float((proj30 ** 2).sum() / max((Dc ** 2).sum(), 1e-12))
 
@@ -162,13 +162,13 @@ def run_model(data_file: Path) -> dict:
         "hidden_size": int(payload.get("hidden_size", 0)),
         "ppl": payload.get("ppl"),
         "method": {
-            "drift": "D = post - pre на выходных decoder-блоков (те же 2048 токенов)",
-            "pre": "выход блока в FP32-модели",
-            "post": "выход того же блока после CHMC v6 (strict_sequential, dampening=0.05)",
-            "pca": "numpy SVD центрированных матриц (детерминированно)",
-            "cone_basis": "top-10 правых сингулярных векторов cent(pre) того же блока",
-            "overlap": "|cos| (знак осей произволен); top10 = energy-weighted best-match по drift-направлениям",
-            "cone_capture_30": "||Dc @ Vc[:, :30]||^2 / ||Dc||^2 — доля энергии дрейфа в span(top-30 конуса)",
+            "drift": "D = post - pre at the outputs of the decoder blocks (the same 2048 tokens)",
+            "pre": "block output in the FP32 model",
+            "post": "output of the same block after CHMC v6 (strict_sequential, dampening=0.05)",
+            "pca": "numpy SVD of centered matrices (deterministic)",
+            "cone_basis": "top-10 right singular vectors of cent(pre) for the same block",
+            "overlap": "|cos| (axis signs are arbitrary); top10 = energy-weighted best-match over the drift directions",
+            "cone_capture_30": "||Dc @ Vc[:, :30]||^2 / ||Dc||^2 — fraction of drift energy in the span of the top-30 cone directions",
         },
         "blocks": {},
     }
@@ -186,7 +186,7 @@ def run_model(data_file: Path) -> dict:
     verdicts = [v["verdict"] for v in out["blocks"].values()]
     n_pass, n_fail = verdicts.count("PASS"), verdicts.count("FAIL")
     if n_fail > 0:
-        overall = "NEGATIVE (hard fail: d90>50 или overlap<0.3)"
+        overall = "NEGATIVE (hard fail: d90>50 or overlap<0.3)"
     elif n_pass >= max(1, len(verdicts) - 1):
         overall = "CONFIRMED"
     else:
@@ -203,15 +203,15 @@ def run_model(data_file: Path) -> dict:
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Шаг 1 v6.2: диагностика дрейфа на сохранённых .pt")
-    ap.add_argument("--data", help="путь к tda_activations_<model>.pt")
+    ap = argparse.ArgumentParser(description="v6.2 step 1: drift diagnostics on the saved .pt files")
+    ap.add_argument("--data", help="path to tda_activations_<model>.pt")
     ap.add_argument("--all", action="store_true",
-                    help="все три модели из results_v6/tda_analysis/")
+                    help="all three models from results_v6/tda_analysis/")
     ap.add_argument("--out-dir", default=str(ROOT_DIR / "results_v6" / "drift_correction" / "step1_diagnostics"))
     args = ap.parse_args()
 
     if not args.all and not args.data:
-        ap.error("нужно --data PATH или --all")
+        ap.error("--data PATH or --all is required")
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -220,7 +220,7 @@ def main():
     if args.all:
         data_files = sorted(tda_analysis_dir.glob("tda_activations_*.pt"))
         if not data_files:
-            raise SystemExit(f".pt не найдены в {tda_analysis_dir}")
+            raise SystemExit(f"no .pt files found in {tda_analysis_dir}")
     else:
         data_files = [Path(args.data)]
 
@@ -240,7 +240,7 @@ def main():
         results.append((df.name, res))
         start_f.close()
 
-    # общий plot: строки = модели, колонки = 4 блока
+    # shared plot: rows = models, columns = the 4 blocks
     n_rows = len(results)
     fig, axes = plt.subplots(n_rows, 4, figsize=(17, 3.6 * n_rows), squeeze=False)
     for r, (fname, res) in enumerate(results):
@@ -263,16 +263,16 @@ def main():
             if c == 0:
                 ax.set_ylabel(model, fontsize=8)
             ax.set_xlabel("comp #", fontsize=8)
-    fig.suptitle("Drift PCA (post - pre CHMC v6): спектр и кумулятивная энергия; "
-                 "красная линия = d90_drift", fontsize=12)
+    fig.suptitle("Drift PCA (post - pre CHMC v6): spectrum and cumulative energy; "
+                 "red line = d90_drift", fontsize=12)
     fig.tight_layout(rect=[0, 0, 1, 0.985])
     png_file = out_dir / "drift_spectrum_plots.png"
     fig.savefig(png_file, dpi=140)
     plt.close(fig)
     print(f"\nPNG: {png_file}")
 
-    # сводка по критериям
-    print("\n=== СВОДКА (критерии: d90<30 И overlap>0.5 -> PASS; d90>50 или overlap<0.3 -> STOP) ===")
+    # summary against the criteria
+    print("\n=== SUMMARY (criteria: d90<30 AND overlap>0.5 -> PASS; d90>50 or overlap<0.3 -> STOP) ===")
     for fname, res in results:
         o = res["overall"]
         print(f"{res['model']}: {o['verdict']} (pass={o['pass']}/{o['n_blocks']}, "

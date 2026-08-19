@@ -3,7 +3,7 @@
 speed_benchmark.py — Inference speed benchmark (GAP-2 fix)
 ==========================================================
 
-Измерить latency генерации для:
+Measure the generation latency for:
   1. Baseline (FP32)
   2. Scalar INT4 quantization
   3. CHMC low-rank + residual

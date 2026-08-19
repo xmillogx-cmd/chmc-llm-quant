@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
 """
-run_variance_diag.py — диагностика ИСТОЧНИКА run-to-run разброса
+run_variance_diag.py — diagnosing the SOURCE of run-to-run variance
 ================================================================================
 
-Сетка (run_stat_grid.py) показала реальный разброс (std ~0.008) между репами
-с РАЗНЫМИ seed (42,43,44,45). Два кандидата на источник:
-  A. CUDA-недетерминизм (cuBLAS/atomic) — разброс даже при ОДНОМ seed.
-  B. Скрытая seed-зависимая случайность — разброс только между разными seed.
+The grid (run_stat_grid.py) showed real variance (std ~0.008) between reps with
+DIFFERENT seeds (42,43,44,45). Two candidates for the source:
+  A. CUDA non-determinism (cuBLAS/atomics) — variance even with a SINGLE seed.
+  B. Hidden seed-dependent randomness — variance only between different seeds.
 
-Этот раннер разбирает: гоняем strict_damp005 (strict, λ=0.05) с ОДНИМ seed
-(42) три раза подряд.
-  - результаты идентичны (range < 1e-6) -> источник B: CUDA детерминирована,
-    разброс сетки пришёл от РАЗНЫХ seed (есть скрытая seed-случайность).
-  - результаты разные (range >= 1e-6)   -> источник A: есть CUDA-недетерминизм,
-    разброс фундаментален, seed его не контролирует.
+This runner disambiguates: we run strict_damp005 (strict, λ=0.05) with ONE seed
+(42) three times in a row.
+  - results identical (range < 1e-6) -> source B: CUDA is deterministic,
+    the grid variance came from DIFFERENT seeds (hidden seed randomness exists).
+  - results differ (range >= 1e-6)   -> source A: CUDA non-determinism present,
+    the variance is fundamental, seed does not control it.
 
-3 прогона x ~60s = ~3 мин.
+3 runs x ~60s = ~3 min.
 
-Запускает ПОЛЬЗОВАТЕЛЬ (агент разделяет GPU и рискует OOM).
-Артефакты: results_v6/variance_diag/
+Run by the USER (the agent shares the GPU and risks OOM).
+Artifacts: results_v6/variance_diag/
 
 Usage:
     python run_variance_diag.py

@@ -1,6 +1,6 @@
 """
-report.py — Финальный отчёт из всех результатов.
-Читает results/*.json → report.md + таблица в консоль.
+report.py — Final report from all results.
+Reads results/*.json → report.md + a table in the console.
 """
 
 import json
@@ -20,8 +20,8 @@ def load(name):
 
 
 def main():
-    ga = load("geometry_activations.json")   # активации
-    gw = load("geometry_weights.json")       # веса
+    ga = load("geometry_activations.json")   # activations
+    gw = load("geometry_weights.json")       # weights
     bp = load("ppl_base.json")               # baseline PPL
     qs = load("quant_scalar.json") or []      # scalar quantization
     lr = load("lowrank_eval.json") or []      # low-rank only
@@ -34,7 +34,7 @@ def main():
     lines.append(f"**Date:** {datetime.now():%Y-%m-%d %H:%M}\n")
     lines.append(f"**Model:** HuggingFaceTB/SmolLM-135M\n")
 
-    # ── Геометрия активаций ────────────────────────────────────
+    # ── Activation geometry ────────────────────────────────────
     lines.append("\n## 1. Activation Geometry\n")
     if ga:
         lines.append("| Metric | Value | Interpretation |")
@@ -55,7 +55,7 @@ def main():
     else:
         lines.append("_No data_\n")
 
-    # ── Структура весов ────────────────────────────────────────
+    # ── Weight structure ────────────────────────────────────────
     lines.append("## 2. Weight Low-Rank Structure\n")
     if gw:
         lines.append("| Metric | Value | Interpretation |")
@@ -72,7 +72,7 @@ def main():
     else:
         lines.append("_No data_\n")
 
-    # ── Сводная таблица сжатия ────────────────────────────────
+    # ── Compression summary table ────────────────────────────────
     lines.append("\n## 3. Compression Results\n")
     lines.append("| Method | Config | PPL | Δ% | ratio | compression | vs scalar |")
     lines.append("|---|---|---:|---:|---:|---:|---|")
@@ -97,7 +97,7 @@ def main():
             vs = f"✗ ({r.get('vs_scalar_pct', ''):+.1f}%)"
         lines.append(f"| **LR+Q** | r{r['rank']} q{r['bits']}b | {r['perplexity']:.2f} | {d} | {r.get('ppl_ratio', '?')} | {r.get('mean_compression_ratio', '?'):.1f}× | {vs} |")
 
-    # ── Выводы ────────────────────────────────────────────────
+    # ── Conclusions ────────────────────────────────────────────────
     lines.append("\n## 4. Conclusions\n")
 
     if lq:
@@ -110,7 +110,7 @@ def main():
             ratio = best["perplexity"] / base_ppl
             lines.append(f"⚠️ PPL ratio = {ratio:.2f}× ({'acceptable' if ratio < 2 else 'significant degradation'})\n")
 
-    # Финальный вердикт
+    # Final verdict
     confirmed = False
     if ga and gw:
         ag = ga.get("anisotropy_global", 0)
@@ -125,17 +125,17 @@ def main():
         if base_ppl and best["perplexity"] / base_ppl < 2:
             lines.append("🟢 **CMQ CONFIRMED** — geometry supports compression, LR+Q achieves acceptable quality.")
             lines.append("\nNext steps:")
-            lines.append("- QAT (Quantization-Aware Training) для 2-bit")
-            lines.append("- LoRA-QAT — fine-tune только low-rank факторы")
+            lines.append("- QAT (Quantization-Aware Training) for 2-bit")
+            lines.append("- LoRA-QAT — fine-tune only the low-rank factors")
         else:
             lines.append("🟡 **Geometry confirmed, but quality degrades too much.** Try QAT.")
     elif not confirmed:
         lines.append("🔴 **CMQ NOT strongly supported** by this model.")
         lines.append("\nNext steps:")
-        lines.append("- Попробовать другие модели (Qwen, LLaMA)")
-        lines.append("- Проверить промежуточные слои")
+        lines.append("- Try other models (Qwen, LLaMA)")
+        lines.append("- Check the intermediate layers")
 
-    # Сохранение + печать
+    # Save + print
     report = "\n".join(lines)
     out = BASE_DIR / "report.md"
     with open(out, "w", encoding="utf-8") as f:

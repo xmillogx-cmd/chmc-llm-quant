@@ -1,17 +1,17 @@
 """
 chmc_v2.py — Adaptive Covariance-Aware Manifold Compression v2
 
-Улучшения над v1:
-  1. Honest compression accounting (правильный учёт бит)
-  2. Adaptive rank allocation per layer (3 политики)
-  3. Layerwise method selection (cov_proj vs weighted_svd по MSE)
-  4. Sparse residuals — magnitude top-k и Hessian-aware
-  5. Outlier protection (top-1% в FP16, остальное INT4)
-  6. Sequential calibration (слои сжимаются последовательно)
+Improvements over v1:
+  1. Honest compression accounting (proper bit accounting)
+  2. Adaptive rank allocation per layer (3 policies)
+  3. Layerwise method selection (cov_proj vs weighted_svd by MSE)
+  4. Sparse residuals — magnitude top-k and Hessian-aware
+  5. Outlier protection (top-1% in FP16, rest in INT4)
+  6. Sequential calibration (layers are compressed sequentially)
   7. Optional local fine-tuning per layer
   8. Multi-model support + cross-model comparison
 
-Результаты -> results_v3/<model_name>/
+Results -> results_v3/<model_name>/
 """
 
 import csv
@@ -131,7 +131,7 @@ def compute_perplexity(model, tokenizer, text):
 # ============================================================
 
 def collect_calibration_inputs(model, tokenizer, num_sequences=256):
-    """Собрать входы для каждого Linear слоя."""
+    """Collect inputs for each Linear layer."""
     texts = [
         "Artificial intelligence is transforming how we interact with technology in everyday life.",
         "The development of large language models has accelerated dramatically over the past decade.",
@@ -196,7 +196,7 @@ def collect_calibration_inputs(model, tokenizer, num_sequences=256):
 # ============================================================
 
 def compute_cov_stats(inputs_by_name, lam=CALIB_LAMBDA):
-    """Посчитать ковариационные спектры для каждого слоя."""
+    """Compute covariance spectra for each layer."""
     stats = []
 
     for name, X in inputs_by_name.items():
@@ -218,7 +218,7 @@ def compute_cov_stats(inputs_by_name, lam=CALIB_LAMBDA):
         probs = (vals / (total_var + 1e-8)).clamp(min=1e-10)
         eff_rank = float(torch.exp(-(probs * probs.log()).sum()))
 
-        # Диагональ ковариации для Hessian-aware sparse residual
+        # Covariance diagonal for Hessian-aware sparse residual
         diag_c = torch.diag(C).cpu()
 
         stats.append({
@@ -239,7 +239,7 @@ def compute_cov_stats(inputs_by_name, lam=CALIB_LAMBDA):
 
 
 # ============================================================
-# Honest compression accounting (Этап 0)
+# Honest compression accounting (Stage 0)
 # ============================================================
 
 def honest_compression_bits(
@@ -256,7 +256,7 @@ def honest_compression_bits(
     outlier_fraction=0.0,
 ):
     """
-    Честный расчёт битов сжатого представления.
+    Honest bit count of the compressed representation.
 
     B_compressed = B_lowrank + B_residual + B_scales + B_indices + B_outliers
     """
@@ -270,30 +270,30 @@ def honest_compression_bits(
     if residual_type == "none":
         pass
     elif residual_type == "dense":
-        # Полный остаток в residual_bits
+        # Full residual in residual_bits
         n_elements = out_features * in_features
         compressed_bits += n_elements * residual_bits
-        # Scales для group quantization
+        # Scales for group quantization
         n_groups = (n_elements // group_size) + 1
         compressed_bits += n_groups * scale_bits
 
     elif residual_type == "sparse":
-        # Top-k элементов остатка
+        # Top-k elements of the residual
         n_total = out_features * in_features
         n_kept = max(1, int(residual_density * n_total))
         compressed_bits += n_kept * (residual_bits + index_bits)
-        # Scales — один scale на весь sparse residual
+        # Scales — one scale for the whole sparse residual
         compressed_bits += 2 * scale_bits  # min_scale, max_scale
 
     elif residual_type == "hessian_sparse":
-        # Hessian-aware top-k (то же что sparse, но выбор по importance)
+        # Hessian-aware top-k (same as sparse, but selection by importance)
         n_total = out_features * in_features
         n_kept = max(1, int(residual_density * n_total))
         compressed_bits += n_kept * (residual_bits + index_bits)
         compressed_bits += 2 * scale_bits
 
     elif residual_type == "outlier_protected":
-        # Top outlier_fraction в FP16, остальной sparse остаток в INT4
+        # Top outlier_fraction in FP16, remaining sparse residual in INT4
         n_total = out_features * in_features
         n_outliers = max(1, int(outlier_fraction * n_total))
         n_sparse = max(0, int(residual_density * n_total) - n_outliers)
@@ -318,11 +318,11 @@ def honest_compression_bits(
 
 
 # ============================================================
-# Adaptive rank allocator (Этап 2)
+# Adaptive rank allocator (Stage 2)
 # ============================================================
 
 def allocate_rank_policy_a(eff_rank):
-    """Политика A: по effective_rank."""
+    """Policy A: based on effective_rank."""
     if eff_rank <= 3:
         return 4
     elif eff_rank <= 10:
@@ -336,7 +336,7 @@ def allocate_rank_policy_a(eff_rank):
 
 
 def allocate_rank_policy_b(d90):
-    """Политика B: по d90."""
+    """Policy B: based on d90."""
     if d90 <= 8:
         return 4
     elif d90 <= 20:
@@ -350,10 +350,10 @@ def allocate_rank_policy_b(d90):
 
 
 def allocate_rank_hybrid(eff_rank, d90, top64_energy, max_rank=64):
-    """Политика C: гибридная."""
+    """Policy C: hybrid."""
     rank = max(allocate_rank_policy_a(eff_rank), allocate_rank_policy_b(d90))
 
-    # Если top64_energy уже очень высокий — можно понизить rank
+    # If top64_energy is already very high, the rank can be lowered
     if top64_energy > 0.95:
         rank = max(4, rank // 2)
 
@@ -361,7 +361,7 @@ def allocate_rank_hybrid(eff_rank, d90, top64_energy, max_rank=64):
 
 
 def clamp_rank(rank, in_features, out_features=None):
-    """Ограничить rank размерами матрицы."""
+    """Clamp the rank to the matrix dimensions."""
     if out_features is None:
         out_features = in_features  # fallback for square-like layers
     max_rank = min(in_features, out_features) // 2
@@ -371,7 +371,7 @@ def clamp_rank(rank, in_features, out_features=None):
 
 
 def allocate_ranks_for_model(cov_stats, policy="hybrid", max_rank=64):
-    """Назначить rank каждому слою."""
+    """Assign a rank to each layer."""
     allocations = []
 
     for s in cov_stats:
@@ -444,11 +444,11 @@ def diag_mat_vec(diag, M):
 
 
 # ============================================================
-# Layerwise method selection (Этап 3)
+# Layerwise method selection (Stage 3)
 # ============================================================
 
 def select_best_lowrank_method(W, X, rank):
-    """Для данного слоя выбрать cov_proj или weighted_svd по reconstruction error."""
+    """For the given layer, pick cov_proj or weighted_svd by reconstruction error."""
     W_cov = covariance_projection(W, X, rank)
     Y_true = W.float() @ X.T
     Y_cov = W_cov.float() @ X.T
@@ -468,7 +468,7 @@ def select_best_lowrank_method(W, X, rank):
 
 
 # ============================================================
-# Residual quantization (Этап 4)
+# Residual quantization (Stage 4)
 # ============================================================
 
 def quantize_symmetric_per_channel(w, bits):
@@ -576,7 +576,7 @@ def quantize_outlier_protected(R, outlier_fraction=0.01, density=0.10, bits=4):
 # ============================================================
 
 def build_configs():
-    """Построить все конфигурации для тестирования."""
+    """Build all configurations for testing."""
     configs = []
 
     # --- Baselines: scalar quantization ---
@@ -738,7 +738,7 @@ def build_configs():
 
 def compress_layer(W, X, rank, config, diag_c=None):
     """
-    Сжать один Linear слой по конфигурации.
+    Compress one Linear layer according to a configuration.
 
     Returns: (W_compressed, bits_info_dict)
     """
@@ -810,7 +810,7 @@ def compress_layer(W, X, rank, config, diag_c=None):
 
 def local_calibrate_layer(W_low_params, R_q_values, X_calib, Y_target, steps=50, lr=1e-3):
     """
-    Локальная оптимизация сжатого слоя.
+    Local optimization of the compressed layer.
 
     W_low_params: list of tensors needing grad (low-rank factors)
     R_q_values: sparse residual values needing grad
@@ -860,7 +860,7 @@ def local_calibrate_layer(W_low_params, R_q_values, X_calib, Y_target, steps=50,
 # ============================================================
 
 def compress_model_independent(model, inputs_by_name, rank_alloc_map, config):
-    """Independent calibration: все слои сжимаются по оригинальным входам."""
+    """Independent calibration: all layers are compressed using the original inputs."""
     total_orig_bits = 0
     total_comp_bits = 0
     layer_results = []
@@ -914,8 +914,8 @@ def compress_model_independent(model, inputs_by_name, rank_alloc_map, config):
 
 def compress_model_sequential(model, inputs_by_name, rank_alloc_map, config):
     """
-    Sequential calibration: слои сжимаются последовательно.
-    После сжатия слоя l, входы для слоя l+1 собираются из уже модифицированной модели.
+    Sequential calibration: layers are compressed sequentially.
+    After compressing layer l, inputs for layer l+1 are collected from the already modified model.
     """
     total_orig_bits = 0
     total_comp_bits = 0
@@ -1001,7 +1001,7 @@ def get_module(model, full_name):
 
 
 def collect_single_layer_input(model, tokenizer, layer_name, text):
-    """Собрать входы для одного слоя из текущей модели."""
+    """Collect inputs for one layer from the current model."""
     if tokenizer is None:
         return torch.zeros(1024, 512)  # fallback
 
@@ -1028,7 +1028,7 @@ def collect_single_layer_input(model, tokenizer, layer_name, text):
 # ============================================================
 
 def run_config(model_name, config, inputs_by_name, rank_alloc_map, tokenizer, eval_text, base_ppl, hf_id=None):
-    """Запустить одну конфигурацию сжатия."""
+    """Run one compression configuration."""
     print(f"\n  Running: {config['name']}")
 
     model = load_model_for_test(model_name, hf_id)
@@ -1097,7 +1097,7 @@ def run_config(model_name, config, inputs_by_name, rank_alloc_map, tokenizer, ev
 
 
 def load_model_for_test(model_name, hf_id=None):
-    """Загрузить модель для тестирования."""
+    """Load a model for testing."""
     if hf_id is None:
         for m in MODELS:
             if m["name"] == model_name:
@@ -1160,7 +1160,7 @@ def _load_tokenizer_by_hf_id(hf_id):
 # ============================================================
 
 def save_artifacts(model_name, results, layer_results_best, cov_stats, rank_allocs, base_ppl):
-    """Сохранить все артефакты для модели."""
+    """Save all artifacts for the model."""
     out_dir = RESULTS_V3 / model_name
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -1211,7 +1211,7 @@ def save_artifacts(model_name, results, layer_results_best, cov_stats, rank_allo
 
 
 def generate_summary_v2(model_name, results, cov_stats, rank_allocs, base_ppl):
-    """Сгенерировать summary для модели."""
+    """Generate a summary for the model."""
     out_dir = RESULTS_V3 / model_name
 
     # Find best by PPL ratio among non-collapse configs
@@ -1286,7 +1286,7 @@ def generate_summary_v2(model_name, results, cov_stats, rank_allocs, base_ppl):
 # ============================================================
 
 def generate_final_report(all_model_results):
-    """Сгенерировать FINAL_REPORT.md с cross-model сравнением."""
+    """Generate FINAL_REPORT.md with cross-model comparison."""
     lines = []
     lines.append("# CHMC v2 — Final Report")
     lines.append("")

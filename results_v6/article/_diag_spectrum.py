@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Временная диагностика: спектр блок-активаций (pre) + реплика var_ratio из project_3d."""
+"""Temporal diagnostics: block activation spectrum (pre) + replication of the var_ratio from project_3d."""
 import numpy as np
 import torch
 

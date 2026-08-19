@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-fix_allocator.py — Исправленный budget allocator (BUG-2 fix)
+fix_allocator.py — Fixed budget allocator (BUG-2 fix)
 ============================================================
 
-Проблема v4: Для target_bw ≤ 4.25 все ранги застревали на min_rank=2.
-Корень бага: energy_at_rank интерполировал неточно для малых рангов,
-gain_per_bit возвращал 0 или отрицательное значение.
+v4 problem: For target_bw ≤ 4.25 all ranks got stuck at min_rank=2.
+Root cause of the bug: energy_at_rank interpolated imprecisely for small ranks,
+and gain_per_bit returned 0 or a negative value.
 
-Исправление:
-  1. Точная интерполяция энергии через (rank, energy) точки из cov_stats
-  2. Greedy allocator с +2/-2 шагами вместо +4/-2
-  3. Фаза увеличения рангов до достижения target_bw
-  4. Фаза уменьшения только при перерасходе
+Fixes:
+  1. Exact energy interpolation via (rank, energy) points from cov_stats
+  2. Greedy allocator with +2/-2 steps instead of +4/-2
+  3. Rank-increase phase until target_bw is reached
+  4. Decrease phase only on over-budget
 
 Usage:
     python v5/fix_allocator.py --cov results_v4/smollm-135m/cov_stats_v4.json
@@ -38,10 +38,10 @@ def load_cov_stats(path: str) -> Dict[str, dict]:
 
 def energy_at_rank_from_spectrum(stats: dict, r: int) -> float:
     """
-    Точная интерполяция энергии по рангу.
+    Exact rank-based energy interpolation.
 
-    Используем реальные точки из cov_stats: top16/32/64 energy и d90/d95/d99.
-    Линейная интерполяция между соседними точками (rank, cumulative_energy).
+    Uses real points from cov_stats: top16/32/64 energies and d90/d95/d99.
+    Linear interpolation between neighboring (rank, cumulative_energy) points.
     """
     r = max(1, r)
     d90  = stats.get("d90", 64)

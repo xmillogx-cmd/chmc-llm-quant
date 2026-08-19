@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-eval_utils.py — Общие утилиты для CHMC v4 пайплайна
+eval_utils.py — Shared utilities for the CHMC v4 pipeline
 ====================================================
 
-Исправления:
-  1. PPL без double-counting overlap токенов (ignore_index=-100)
-  2. WikiText eval data вместо self-generated fallback
-  3. honest_compression_bits с original_bits=16.0 (FP16 baseline)
-  4. Calibration на WikiText вместо повторяющегося текста
+Fixes:
+  1. PPL without double-counting of overlap tokens (ignore_index=-100)
+  2. WikiText eval data instead of the self-generated fallback
+  3. honest_compression_bits with original_bits=16.0 (FP16 baseline)
+  4. Calibration on WikiText instead of repeated text
 """
 
 import math
@@ -35,13 +35,13 @@ DTYPE = torch.float32
 # ──────────────────────────────────────────────────────────────────────
 def load_wikitext_eval(tokenizer: PreTrainedTokenizer, n_tokens: int = 12000) -> torch.Tensor:
     """
-    Загрузить или скачать WikiText test split для оценки PPL.
+    Load or download the WikiText test split for PPL evaluation.
 
-    FIX #2: НИКОГДА не использовать model.generate() для eval —
-    модель идеально предсказывает свои же токены → PPL ≈ 1.0 (артефакт).
+    FIX #2: NEVER use model.generate() for eval —
+    the model predicts its own tokens perfectly → PPL ≈ 1.0 (an artifact).
 
-    FIX v5: кэш привязан к vocab-размеру токенизатора, чтобы SmolLM и Qwen
-    не использовали чужие токены (разные vocabulary → разные ID).
+    FIX v5: the cache is tied to the tokenizer's vocab size so that SmolLM and Qwen
+    do not use each other's tokens (different vocabularies → different IDs).
     """
     # Model-specific cache key based on vocab size
     vocab_size = len(tokenizer)
@@ -90,9 +90,9 @@ def load_wikitext_eval(tokenizer: PreTrainedTokenizer, n_tokens: int = 12000) ->
 
 def load_calib_text(tokenizer: PreTrainedTokenizer, n_tokens: int = 2048) -> str:
     """
-    Загрузить текст для калибровки (использует WikiText).
+    Load text for calibration (uses WikiText).
 
-    FIX #4: calibration на разнообразном тексте вместо повторяющейся фразы.
+    FIX #4: calibration on diverse text instead of a repeated phrase.
     """
     if CALIB_TEXT_CACHE.exists():
         with open(CALIB_TEXT_CACHE, "r", encoding="utf-8") as f:
@@ -119,10 +119,10 @@ def compute_perplexity(
     stride: int = 256,
 ) -> float:
     """
-    Вычислить perplexity на WikiText с маскированием overlap токенов.
+    Compute perplexity on WikiText with masking of the overlap tokens.
 
-    FIX #1: при overlap (stride < max_len) первые (max_len - stride - 1) токенов
-    в каждом чанке маскируются ignore_index=-100, чтобы не считать loss дважды.
+    FIX #1: when overlapping (stride < max_len), the first (max_len - stride - 1) tokens
+    in each chunk are masked with ignore_index=-100 so that the loss is not counted twice.
     """
     if encoded is None:
         encoded = load_wikitext_eval(tokenizer, n_tokens)
@@ -190,10 +190,10 @@ def collect_calibration_inputs(
     n_tokens: int = 2048,
 ) -> Dict[str, torch.Tensor]:
     """
-    Собрать input activations для всех слоёв за один forward pass.
+    Collect input activations for all layers in a single forward pass.
 
-    FIX #4: использует WikiText вместо повторяющегося текста.
-    Использует flatten(0,1) для получения [batch*seq, in_f] формы.
+    FIX #4: uses WikiText instead of repeated text.
+    Uses flatten(0,1) to obtain the [batch*seq, in_f] shape.
     """
     inputs_map = {name: [] for name in layer_names}
 
@@ -264,11 +264,11 @@ def honest_compression_bits(
     group_size: int = None,           # None = per-channel (default), >0 = per-group
 ) -> Dict[str, float]:
     """
-    Честный подсчёт бит для сжатого веса.
+    Honest bit count for the compressed weight.
 
-    FIX #3: original_bits=16.0 (FP16 baseline), как в индустрии (GPTQ, AWQ).
-    FIX v2: dense residual НЕ получает index_bits overhead.
-    FIX v3: per-channel scales по умолчанию (group_size=None), как quantize_symmetric_per_channel.
+    FIX #3: original_bits=16.0 (FP16 baseline), as in industry practice (GPTQ, AWQ).
+    FIX v2: the dense residual does NOT get the index_bits overhead.
+    FIX v3: per-channel scales by default (group_size=None), like in quantize_symmetric_per_channel.
     """
     original = original_bits * out_f * in_f
 
@@ -279,7 +279,7 @@ def honest_compression_bits(
     n_residual = int(residual_density * out_f * in_f)
     residual_vals = n_residual * residual_bits
 
-    # Index overhead — ТОЛЬКО для sparse residual
+    # Index overhead — ONLY for the sparse residual
     is_sparse = residual_density < 0.99
     if is_sparse:
         residual_idx = n_residual * (index_bits * 2)
@@ -316,11 +316,11 @@ def weighted_svd_compress(
     W: torch.Tensor, X: torch.Tensor, rank: int
 ) -> Tuple[torch.Tensor, float]:
     """
-    Low-rank аппроксимация с взвешиванием по ковариации входов.
+    Low-rank approximation weighted by the input covariance.
 
-    W: [out_f, in_f] — оригинальный вес
-    X: [tokens, in_f] — калибровочные входы
-    rank: целевой ранг
+    W: [out_f, in_f] — original weight
+    X: [tokens, in_f] — calibration inputs
+    rank: target rank
     """
     W = W.float()
     out_f, in_f = W.shape
@@ -345,7 +345,7 @@ def weighted_svd_compress(
 # Layer helpers (shared)
 # ──────────────────────────────────────────────────────────────────────
 def get_compressible_layers(model: PreTrainedModel) -> List[str]:
-    """Получить список compressible Linear слоёв (без embed_tokens и lm_head)."""
+    """Get the list of compressible Linear layers (excluding embed_tokens and lm_head)."""
     skip_prefixes = ("embed_tokens", "lm_head")
     return [
         name for name, mod in model.named_modules()
@@ -357,7 +357,7 @@ def get_compressible_layers(model: PreTrainedModel) -> List[str]:
 
 
 def get_module_by_name(model: PreTrainedModel, name: str) -> Optional[nn.Module]:
-    """Найти модуль по точному пути (model.layers.0.self_attn.q_proj)."""
+    """Find a module by its exact path (model.layers.0.self_attn.q_proj)."""
     mod = model
     for p in name.split("."):
         mod = getattr(mod, p, None)
@@ -367,7 +367,7 @@ def get_module_by_name(model: PreTrainedModel, name: str) -> Optional[nn.Module]
 
 
 def get_weight(model: PreTrainedModel, layer_name: str) -> torch.Tensor:
-    """Получить weight тензор слоя."""
+    """Get the layer's weight tensor."""
     mod = get_module_by_name(model, layer_name)
     if mod is None or not isinstance(mod, nn.Linear):
         raise ValueError(f"Layer '{layer_name}' not found or not Linear")
@@ -375,7 +375,7 @@ def get_weight(model: PreTrainedModel, layer_name: str) -> torch.Tensor:
 
 
 def set_weight(model: PreTrainedModel, layer_name: str, weight: torch.Tensor):
-    """Установить weight тензор слоя."""
+    """Set the layer's weight tensor."""
     mod = get_module_by_name(model, layer_name)
     with torch.no_grad():
         mod.weight.copy_(weight.to(mod.weight.dtype))

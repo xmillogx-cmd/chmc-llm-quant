@@ -1,6 +1,6 @@
 """
-lowrank_eval.py — Чистое low-rank сжатие без квантования.
-Результат → results/lowrank_eval.json
+lowrank_eval.py — Pure low-rank compression without quantization.
+Result → results/lowrank_eval.json
 """
 
 import json
@@ -70,7 +70,7 @@ def main():
     tokenizer = load_tokenizer()
     text = get_eval_text()
 
-    # Определяем допустимые ранги
+    # Determine the allowed ranks
     probe = load_model(max_retries=2)
     min_dim = None
     for p in probe.parameters():
@@ -102,7 +102,7 @@ def main():
 
         model = load_model()
 
-        # Собираем матрицы для сжатия
+        # Collect the matrices for compression
         matrices = []
         for name, mod in model.named_modules():
             if isinstance(mod, torch.nn.Linear) and "embed" not in name and "lm_head" not in name:

@@ -3,12 +3,12 @@
 sparse_comp_seq.py — Sparse sequential compensation (BUG-4 fix)
 ================================================================
 
-Проблема v4: Per-layer sparse улучшает cos_sim, но full-model PPL = 2972x.
-Ошибки накапливаются через слои.
+v4 problem: Per-layer sparse improves cos_sim, but full-model PPL = 2972x.
+Errors accumulate across layers.
 
-Решение: После sparse выбора для каждого слоя переоптимизировать low-rank факторы
-чтобы компенсировать потерянный остаток. Делать последовательно (sequential),
-собирая входы из уже сжатой модели.
+Solution: After the per-layer sparse selection, re-optimize the low-rank factors
+to compensate for the lost residual. Do it sequentially (sequential),
+collecting inputs from the already-compressed model.
 
 Usage:
     python v5/sparse_comp_seq.py --model models/smollm-135m --density 0.25

@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 """
-chmc_pipeline.py — Единый пайплайн CHMC v5 (единая точка правды)
+chmc_pipeline.py — unified CHMC v5 pipeline (single source of truth)
 ==================================================================
 
-Все раннеры (run_chmc_v5.py, run_benchmark.py, run_comparison_3models.py)
-используют этот модуль вместо собственных копий пайплайна.
+All runners (run_chmc_v5.py, run_benchmark.py, run_comparison_3models.py)
+use this module instead of their own copies of the pipeline.
 
-Пайплайн (чисто алгебраический, без итеративной оптимизации):
-  1. Weighted SVD с демпфированной ковариансой → low-rank факторизация
+Pipeline (purely algebraic, no iterative optimization):
+  1. Weighted SVD with damped covariance -> low-rank factorization
   2. Residual = W - W_lr
-  3. Groupwise квантизация residual (INT4/INT8, group_size=128),
-     опционально с H⁻¹ error compensation (GPTQ-style sequential columns)
-  4. Mixed precision: top-k чувствительных слоёв (по recon error на
-     РЕАЛЬНЫХ calibration-входах) получают INT8 residual + rank boost
+  3. Groupwise quantization of residual (INT4/INT8, group_size=128),
+     optionally with H⁻¹ error compensation (GPTQ-style sequential columns)
+  4. Mixed precision: top-k sensitive layers (by recon error on REAL
+     calibration inputs) get INT8 residual + rank boost
 
-Историческая заметка: STE-калибровка (итеративная оптимизация A, B, R
-против output-MSE) удалена — параметры дрейфуют в нулевом подпространстве
-кал. данных и взрывают веса (PPL 1e8+). Закрытая форма стабильнее.
+Historical note: STE calibration (iterative optimization of A, B, R against
+output-MSE) was removed — parameters drift in the null space of the calibration
+data and blow up the weights (PPL 1e8+). The closed form is more stable.
 """
 
 import time
@@ -44,7 +44,7 @@ RESULTS.mkdir(parents=True, exist_ok=True)
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 
-# ── Слой ─────────────────────────────────────────────────────────
+# ── Layer ────────────────────────────────────────────────────────
 
 def compress_layer_chmc(
     W_orig: torch.Tensor,
@@ -98,7 +98,7 @@ def compress_layer_chmc(
     return W_comp, stats
 
 
-# ── Чувствительность слоёв ───────────────────────────────────────
+# ── Layer sensitivity ────────────────────────────────────────────
 
 def find_sensitive_layers(
     layers: List[str],
@@ -127,7 +127,7 @@ def find_sensitive_layers(
     return {n for n, _ in sorted_layers[:top_k]}
 
 
-# ── Полный пайплайн ──────────────────────────────────────────────
+# ── Full pipeline ────────────────────────────────────────────────
 
 def run_chmc_v5(
     model_path: str,

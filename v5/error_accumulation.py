@@ -3,8 +3,8 @@
 error_accumulation.py — Error accumulation analysis (GAP-4 fix)
 ===============================================================
 
-Сжимать слои по одному и измерять PPL после каждого.
-Показывает, какие слои вносят наибольший вклад в деградацию качества.
+Compress layers one by one and measure PPL after each layer.
+Shows which layers contribute most to the quality degradation.
 
 Usage:
     python v5/error_accumulation.py --model models/smollm-135m --rank 8

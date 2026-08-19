@@ -58,24 +58,24 @@ DEFAULT_OVERRIDES = {"strict_sequential": True, "dampening": 0.05}
 
 
 def _get_blocks(mdl):
-    """Список decoder-layer блоков (residual stream). Llama/Qwen/TinyLlama: mdl.model.layers."""
+    """List of decoder-layer blocks (residual stream). Llama/Qwen/TinyLlama: mdl.model.layers."""
     core = getattr(mdl, "model", None) or getattr(mdl, "transformer", None) \
         or getattr(mdl, "language_model", None)
     layers = getattr(core, "layers", None) if core is not None else None
     if layers is None:
-        raise RuntimeError("Не удалось найти decoder layers (mdl.model.layers).")
+        raise RuntimeError("Could not find the decoder layers (mdl.model.layers).")
     blocks = list(layers)
     return [f"layers.{i}" for i in range(len(blocks))], blocks
 
 
 def _capture_block_outputs(mdl, blocks, input_ids, attention_mask):
-    """Один forward с хуками на выходы блоков -> {idx: (N, d) CPU fp32}."""
+    """One forward pass with hooks on block outputs -> {idx: (N, d) CPU fp32}."""
     captured = {}
 
     def make_hook(idx):
         def hook(module, inp, out):
             h = out[0] if isinstance(out, tuple) else out
-            # (B, N, d) -> (N, d): batch=1 в наших прогонах
+            # (B, N, d) -> (N, d): batch=1 in our runs
             captured[idx] = h[0].detach().float().cpu()
         return hook
 
@@ -96,7 +96,7 @@ def main():
     args = parser.parse_args()
 
     _log_file = tda_log.start_logging(
-        tda_log.log_file_for("collect", args.model))  # noqa: F841 (дожитие до конца процесса)
+        tda_log.log_file_for("collect", args.model))  # noqa: F841 (keeps the file alive until process exit)
 
     overrides = json.loads(args.overrides)
     cfg = {**C.default_config(), **overrides, "bit_budget_bpw": args.bpw}
@@ -138,7 +138,7 @@ def main():
         mdl = mdl.to(C.DEVICE)
     mdl.eval()
 
-    # ── входные токены (те же, что в collect_calibration_inputs) ──────
+    # ── input tokens (the same as in collect_calibration_inputs) ──────
     from eval_utils_v6 import load_calib_text
     calib_text = load_calib_text(tok, args.n_tokens)
     enc = tok(calib_text, return_tensors="pt", truncation=True, max_length=args.n_tokens)
@@ -148,7 +148,7 @@ def main():
     block_names, blocks = _get_blocks(mdl)
     print(f"Blocks: {len(block_names)} | hidden={mdl.config.hidden_size}")
 
-    # ── PPL baseline + pre-активации ────────────────────────────────
+    # ── PPL baseline + pre-activations ────────────────────────────────
     encoded_eval = C.load_wikitext_eval(tok)
     baseline_ppl = C.compute_perplexity(mdl, tok, encoded_eval)
     print(f"Baseline PPL (FP32): {baseline_ppl:.4f}")
@@ -159,7 +159,7 @@ def main():
     d_hidden = int(first.shape[1])
     print(f"Pre-activations captured: {len(pre_act)} blocks x ({n_tokens_actual}, {d_hidden})")
 
-    # ── цикл сжатия (реплика run_chmc_v6) + SVD весов до/после ───────
+    # ── compression loop (replica of run_chmc_v6) + SVD of weights before/after ───────
     layers = C.get_compressible_layers(mdl)
     print(f"Compressible layers: {len(layers)}")
     calib_inputs = C.collect_calibration_inputs(mdl, layers, tok, n_tokens=args.n_tokens)
@@ -219,7 +219,7 @@ def main():
 
     print(f"Compression done in {time.time()-t_comp:.1f}s")
 
-    # ── post-активации + PPL после сжатия ───────────────────────────
+    # ── post-activations + PPL after compression ───────────────────────────
     if device_map is None:
         input_ids = input_ids.to(C.DEVICE)
         attention_mask = attention_mask.to(C.DEVICE)
@@ -228,7 +228,7 @@ def main():
     ratio = compressed_ppl / baseline_ppl if baseline_ppl > 0 else float("inf")
     print(f"Compressed PPL: {compressed_ppl:.4f} | ratio={ratio:.6f}")
 
-    # ── сохранение ОДНОГО .pt ───────────────────────────────────────
+    # ── saving a single .pt ───────────────────────────────────────
     payload = {
         "model": args.model,
         "config": cfg,
@@ -247,14 +247,14 @@ def main():
     torch.save(payload, out_file)
     print(f"\nSaved: {out_file}")
 
-    # ── освобождение памяти (урок OOM v7) ───────────────────────────
+    # ── freeing memory (v7 OOM lesson) ───────────────────────────
     del mdl, tok, encoded_eval, calib_inputs, pre_act, post_act, sv_pre, sv_post
     gc.collect()
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
 
     print(f"Total: {time.time()-t0:.1f}s")
-    print("Дальше (CPU): venv\\Scripts\\python.exe tda_analysis\\analyze.py")
+    print("Next (CPU): venv\\Scripts\\python.exe tda_analysis\\analyze.py")
 
 
 if __name__ == "__main__":

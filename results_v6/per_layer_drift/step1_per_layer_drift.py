@@ -64,8 +64,8 @@ MODEL_PATH = str(BASE_DIR.parent / "models" / "smollm-135m")
 SEED = 42
 N_TOKENS = 2048
 TARGET_BPW = 4.2875
-D90_GATE = 30          # порог d90_layer (объявлен до данных)
-GATE_FRAC = 0.50       # доля слоёв, прошедших порог
+D90_GATE = 30          # threshold for d90_layer (declared before seeing the data)
+GATE_FRAC = 0.50       # fraction of layers that pass the threshold
 
 
 def _get_mod(model, name):
@@ -78,11 +78,11 @@ def _get_mod(model, name):
 
 
 def collect_inputs_outputs(model, layer_names, tokenizer, n_tokens=N_TOKENS):
-    """Один forward с hooks на ВХОДЫ и ВЫХОДы каждого слоя.
+    """One forward with hooks on the INPUTS and OUTPUTS of every layer.
 
-    Логика токенизации/субсемплирования идентична eval_utils_v6.
-    collect_calibration_inputs (тот же load_calib_text + truncation=2048 +
-    cat[:n_tokens]), плюс захват выходов для accumulated drift.
+    Tokenization/subsampling logic is identical to eval_utils_v6's
+    collect_calibration_inputs (same load_calib_text + truncation=2048 +
+    cat[:n_tokens]), plus capturing outputs for accumulated drift.
     """
     store_in = {name: [] for name in layer_names}
     store_out = {name: [] for name in layer_names}
@@ -124,10 +124,10 @@ def collect_inputs_outputs(model, layer_names, tokenizer, n_tokens=N_TOKENS):
 
 
 def drift_metrics(D: np.ndarray) -> dict:
-    """d90 + спектр для матрицы дрейфа D [n_tokens, out_f].
+    """d90 + spectrum for the drift matrix D [n_tokens, out_f].
 
-    Центрирование по токенам (конвенция TDA/drift_correction): SVD от
-    D - mean(D, axis=0). d90 = мин. k с cumsum(s^2)/sum(s^2) >= 0.90.
+    Centering over tokens (TDA/drift_correction convention): SVD of
+    D - mean(D, axis=0). d90 = minimal k with cumsum(s^2)/sum(s^2) >= 0.90.
     """
     Dc = D - D.mean(axis=0, keepdims=True)
     s = np.linalg.svd(Dc, compute_uv=False)
@@ -151,10 +151,10 @@ def drift_metrics(D: np.ndarray) -> dict:
 
 
 def rel_disps(D: np.ndarray, X: np.ndarray) -> dict:
-    """rel_disp в двух конвенциях.
+    """rel_disp in two conventions.
 
-    user:   mean(||d_i||) / mean(||x_i||)          (формула из промпта)
-    token:  mean( ||d_i|| / ||x_i|| )              (конвенция TDA)
+    user:   mean(||d_i||) / mean(||x_i||)          (formula from the prompt)
+    token:  mean( ||d_i|| / ||x_i|| )              (TDA convention)
     """
     dn = np.linalg.norm(D, axis=1)
     xn = np.linalg.norm(X, axis=1).clip(min=1e-12)
@@ -186,12 +186,12 @@ def main():
     layers = get_compressible_layers(mdl)
     print(f"[step1] compressible layers: {len(layers)}", flush=True)
 
-    # ── FP forward: входы + выходы всех слоёв на чистой FP-модели ───
+    # ── FP forward: inputs + outputs of all layers on the clean FP model ───
     t_fp = time.time()
     pre_in, pre_out = collect_inputs_outputs(mdl, layers, tok, N_TOKENS)
     print(f"[step1] FP pass done ({time.time()-t_fp:.1f}s)", flush=True)
 
-    # ── ranks + квантизация (точно как run_chmc_v6 baseline) ───────
+    # ── ranks + quantization (exactly like the run_chmc_v6 baseline) ───────
     layer_shapes = []
     for name in layers:
         mod = _get_mod(mdl, name)
@@ -212,7 +212,7 @@ def main():
         W_orig = get_weight(mdl, name).detach().cpu()
         X_calib = pre_in[name].to(W_orig.device)
 
-        # LOCAL drift: D_loc = X @ (W - W_comp).T — до set_weight
+        # LOCAL drift: D_loc = X @ (W - W_comp).T — before set_weight
         W_comp, stats = C.compress_layer_v6(
             W_orig, X_calib,
             rank=ranks[name],
@@ -249,7 +249,7 @@ def main():
     post_in, post_out = collect_inputs_outputs(mdl, layers, tok, N_TOKENS)
     print(f"[step1] compressed pass done ({time.time()-t_cp:.1f}s)", flush=True)
 
-    # ── accumulated metrics (по слоям, с освобождением памяти) ──────
+    # ── accumulated metrics (per layer, with memory release\) ──────
     t_m = time.time()
     for idx, rec in enumerate(records):
         if (idx + 1) % 30 == 0:
@@ -301,10 +301,10 @@ def main():
             "hessian_batches": 1, "niter": 5, "use_compensation": True,
         },
         "definitions": {
-            "local": "D_loc = X_fp @ (W - W_comp).T — вклад слоя на чистом FP-входе",
-            "acc_in": "post_in - pre_in — состояние, входящее в слой (сумма всех предыдущих)",
-            "acc_out": "post_out - pre_out — выход слоя в сжатой vs FP модели",
-            "d90": "мин. k: cumsum(s^2)/sum(s^2) >= 0.90, SVD от центрированной D (float64)",
+            "local": "D_loc = X_fp @ (W - W_comp).T — layer contribution on a clean FP input",
+            "acc_in": "post_in - pre_in — state entering the layer (sum of all previous layers)",
+            "acc_out": "post_out - pre_out — layer output in the compressed vs FP model",
+            "d90": "minimal k: cumsum(s^2)/sum(s^2) >= 0.90, SVD of centered D (float64)",
         },
         "summary": summary,
         "verdict_gate1": ("PASS" if frac_loc >= GATE_FRAC else "FAIL"),

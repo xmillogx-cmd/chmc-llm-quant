@@ -3,10 +3,10 @@
 full_calibration.py — Full-model calibration test (BUG-3/4 fix)
 ==============================================================
 
-Проблема v4: Calibration тестировалась на 10 слоях из 210.
-Этот скрипт проверяет PPL при сжатии ВСЕХ слоёв.
+v4 problem: Calibration had been tested on only 10 of the 210 layers.
+This script checks PPL when compressing ALL layers.
 
-Варианты:
+Variants:
   1. Independent compression (all layers compressed with same calibration inputs)
   2. Sequential compression (inputs re-collected after each layer)
   3. Layerwise calibration (optimize A,B,R jointly per layer)

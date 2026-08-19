@@ -3,8 +3,8 @@
 run_step12.py — CHMC v6 Step 1 (baseline) + Step 2 (A1/A2/A3 single)
 =====================================================================
 
-Per the directive: "Начни с Шага 1 и Шага 2. Не переходи к комбинациям
-пока не проверены одиночные техники."
+Per the directive: "Start with Step 1 and Step 2. Do not move on to combinations
+until the single techniques have been verified."
 
 All runs are at an EQUAL bit budget where a fair comparison is intended:
   - Step 1a: v5-style baseline (rank=8)  -> reproduces ~1.188x, BPW ~4.50

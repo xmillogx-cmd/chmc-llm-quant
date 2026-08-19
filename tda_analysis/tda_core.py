@@ -1,28 +1,28 @@
 """
-tda_core.py — TDA-математика для анализа топологии активаций/весов CHMC v6
+tda_core.py — TDA math for topology analysis of CHMC v6 activations/weights
 =============================================================================
 
-CPU-only. Зависимости: numpy, scipy, gudhi (3.x).
+CPU-only. Dependencies: numpy, scipy, gudhi (3.x).
 
-Что здесь:
-  - разреженный Vietoris-Rips комплекс по kNN-графу (k≈32) вместо полного O(n^2);
-    треугольники = клики размера 3 в kNN-графе (стандартная спарсификация VR,
-    сохраняющая H_0/H_1 на масштабах до ~kNN-радиуса).
-  - H_0: ТОЧНО через union-find по рёбрам kNN-графа + перекрёстная проверка
-    с GUDHI (SimplexTree.compute_persistence, assign_filtration = max веса вершин/рёбер).
-  - H_1: GUDHI SimplexTree на кликовом комплексе до размерности 2.
-    Филтрация: вершина=0, ребро=d(i,j), треугольник=max(трёх рёбер) — каноническая VR-филтрация.
-  - Betti при масштабе eps*: число открытых интервалов [b, d) на s=eps*.
-    eps* = медиана расстояний до ближайшего соседа в облаке (типичный масштаб данных).
-  - topo-rank(eps*) = b_0(eps*) + b_1(eps*) — "топологический ранг" из плана:
-    конус/контрактируемое облако -> только H_0 -> topo-rank=1; два кластера -> 2;
-    окружность -> b_0+b_1 = 2.
-  - W_1 между диаграммами персистентности: точный расчёт на обрезанных диаграммах
-    (top-K по персистентности, K=64) через scipy.linear_sum_assignment с L_inf-метрикой;
-    сопоставление точки (b,d) с диагональю стоит p/2, где p = d - b.
-    Существенные классы (death=inf) исключаются до расчёта W_1 (стандартная практика).
-  - effective_rank / d90 — те же соглашения, что в v5/generate_cov_stats.py и v5/rank_gap.py:
-    p_i = s_i^2 / sum(s_j^2); eff_rank = exp(H(p)); d90 = мин. k с cumsum(p) >= 0.90.
+What is here:
+  - sparse Vietoris-Rips complex on the kNN graph (k≈32) instead of full O(n^2);
+    triangles = cliques of size 3 in the kNN graph (standard VR sparsification,
+    preserving H_0/H_1 at scales up to ~the kNN radius).
+  - H_0: EXACT via union-find over the edges of the kNN graph + cross-check
+    with GUDHI (SimplexTree.compute_persistence, assign_filtration = max of vertex/edge weights).
+  - H_1: GUDHI SimplexTree on the clique complex up to dimension 2.
+    Filtration: vertex=0, edge=d(i,j), triangle=max(of the three edges) — canonical VR filtration.
+  - Betti at scale eps*: number of open intervals [b, d) at s=eps*.
+    eps* = median nearest-neighbour distance in the cloud (typical data scale).
+  - topo-rank(eps*) = b_0(eps*) + b_1(eps*) — "topological rank" from the plan:
+    cone/contractible cloud -> only H_0 -> topo-rank=1; two clusters -> 2;
+    circle -> b_0+b_1 = 2.
+  - W_1 between persistence diagrams: exact computation on trimmed diagrams
+    (top-K by persistence, K=64) via scipy.linear_sum_assignment with the L_inf metric;
+    matching a point (b,d) to the diagonal costs p/2, where p = d - b.
+    Essential classes (death=inf) are excluded before computing W_1 (standard practice).
+  - effective_rank / d90 — same conventions as in v5/generate_cov_stats.py and v5/rank_gap.py:
+    p_i = s_i^2 / sum(s_j^2); eff_rank = exp(H(p)); d90 = min k with cumsum(p) >= 0.90.
 """
 
 from __future__ import annotations
@@ -34,18 +34,18 @@ import numpy as np
 from scipy.spatial import cKDTree
 from scipy.optimize import linear_sum_assignment
 
-# Интервал: (birth, death), death может быть inf.
+# Interval: (birth, death), death may be inf.
 Interval = Tuple[float, float]
 
 
 # ──────────────────────────────────────────────────────────────
-# kNN-граф и разрешенный VR-комплекс
+# kNN graph and sparse VR complex
 # ──────────────────────────────────────────────────────────────
 
 def knn_edges(X: np.ndarray, k: int = 32) -> Tuple[np.ndarray, np.ndarray]:
-    """Неориентированные рёбра kNN-графа.
+    """Undirected edges of the kNN graph.
 
-    Возвращает (edge_idx [E x 2], edge_w [E]) — i < j, вес = евклидово расстояние.
+    Returns (edge_idx [E x 2], edge_w [E]) — i < j, weight = Euclidean distance.
     """
     X = np.ascontiguousarray(X, dtype=np.float64)
     n = X.shape[0]
@@ -71,9 +71,9 @@ def knn_edges(X: np.ndarray, k: int = 32) -> Tuple[np.ndarray, np.ndarray]:
 
 def vr_triangles(edge_idx: np.ndarray, edge_w: np.ndarray,
                  max_triangles: int = 300_000) -> Tuple[np.ndarray, np.ndarray, bool]:
-    """Треугольники VR-комплекса = клики размера 3 в kNN-графе.
+    """Triangles of the VR complex = cliques of size 3 in the kNN graph.
 
-    Вес треугольника = max(трёх рёбер). Возвращает (tri_idx [T x 3], tri_w [T], truncated).
+    Triangle weight = max(of the three edges). Returns (tri_idx [T x 3], tri_w [T], truncated).
     """
     adj: Dict[int, List[Tuple[int, float]]] = {}
     for (i, j), w in zip(edge_idx.tolist(), edge_w.tolist()):
@@ -126,17 +126,17 @@ def vr_triangles(edge_idx: np.ndarray, edge_w: np.ndarray,
 
 
 # ──────────────────────────────────────────────────────────────
-# H_0: union-find (точная) + GUDHI (перекрёстная проверка)
+# H_0: union-find (exact) + GUDHI (cross-check)
 # ──────────────────────────────────────────────────────────────
 
 def h0_intervals_unionfind(n_points: int, edge_idx: np.ndarray,
                            edge_w: np.ndarray) -> List[Interval]:
-    """Точные H_0-интервалы VR (все рождения = 0).
+    """Exact H_0 intervals of the VR complex (all births = 0).
 
-    n - c конечных интервала (0, w_merge), где c = число компонент графа рёбер,
-    + c существенных (0, inf) — по одному на компоненту. В разреженном kNN VR
-    удалённые кластеры не соединяются рёбрами и остаются отдельными навсегда;
-    совпадает с GUDHI (там тоже по essential-классу на компоненту).
+    n - c finite intervals (0, w_merge), where c = number of components of the edge graph,
+    + c essential ones (0, inf) — one per component. In a sparse kNN VR
+    distant clusters are not connected by edges and stay separate forever;
+    matches GUDHI (which also has one essential class per component).
     """
     parent = list(range(n_points))
     size = [1] * n_points
@@ -178,25 +178,25 @@ def _gudhi_intervals(tree, dim: int) -> List[Interval]:
 
 def persistence_gudhi(X: np.ndarray, k: int = 32,
                       max_triangles: int = 300_000) -> Dict[str, object]:
-    """Полная персистентность H_0/H_1 разрешенного VR-комплекса через GUDHI.
+    """Full H_0/H_1 persistence of the sparse VR complex via GUDHI.
 
-    Филтрация: вершина=0, ребро=d(i,j), треугольник=max(рёбер).
+    Filtration: vertex=0, edge=d(i,j), triangle=max(of the edges).
     """
-    import gudhi  # локальный импорт: tests могут пропускать gudhi-dependent кейсы
+    import gudhi  # local import: tests may skip gudhi-dependent cases
 
     edge_idx, edge_w = knn_edges(X, k)
     tri_idx, tri_w, truncated = vr_triangles(edge_idx, edge_w, max_triangles)
 
     tree = gudhi.SimplexTree()
     n = X.shape[0]
-    # insert_batch(vertex_array (k+1 x N), filtrations (N,)); faces подставляются сами.
+    # insert_batch(vertex_array (k+1 x N), filtrations (N,)); faces are inserted automatically.
     tree.insert_batch(np.arange(n).reshape(1, -1).astype(np.int64), np.zeros(n))
     if len(edge_idx):
         tree.insert_batch(edge_idx.T.astype(np.int64), edge_w)
     if len(tri_idx):
         tree.insert_batch(tri_idx.T.astype(np.int64), tri_w)
 
-    # persistence_dim_max=True: H_1 считается даже для чисто графовых комплексов.
+    # persistence_dim_max=True: H_1 is computed even for purely graph complexes.
     tree.compute_persistence(persistence_dim_max=True)
     h0 = _gudhi_intervals(tree, 0)
     h1 = _gudhi_intervals(tree, 1)
@@ -210,16 +210,16 @@ def persistence_gudhi(X: np.ndarray, k: int = 32,
 
 
 # ──────────────────────────────────────────────────────────────
-# Betti при масштабе, topo-rank, eps*
+# Betti at scale, topo-rank, eps*
 # ──────────────────────────────────────────────────────────────
 
 def betti_at_scale(intervals: Sequence[Interval], s: float) -> int:
-    """Число классов, живых на масштабе s: b <= s < d."""
+    """Number of classes alive at scale s: b <= s < d."""
     return sum(1 for (b, d) in intervals if b <= s < d)
 
 
 def eps_star(X: np.ndarray, k: int = 32) -> float:
-    """Типичный масштаб данных: медиана расстояний до ближайшего соседа."""
+    """Typical data scale: median nearest-neighbour distance."""
     X = np.ascontiguousarray(X, dtype=np.float64)
     n = X.shape[0]
     tree = cKDTree(X)
@@ -230,18 +230,18 @@ def eps_star(X: np.ndarray, k: int = 32) -> float:
 
 
 def topo_rank(intervals_by_dim: Dict[int, Sequence[Interval]], s: float) -> int:
-    """topo-rank(s) = sum_k b_k(s) по доступным размерностям (H_0 + H_1)."""
+    """topo-rank(s) = sum_k b_k(s) over the available dimensions (H_0 + H_1)."""
     return sum(betti_at_scale(iv, s) for iv in intervals_by_dim.values())
 
 
 # ──────────────────────────────────────────────────────────────
-# W_1 между диаграммами (обрезанные, top-K по персистентности)
+# W_1 between diagrams (trimmed, top-K by persistence)
 # ──────────────────────────────────────────────────────────────
 
 def _trim(diagram: Sequence[Interval], k: int = 64) -> np.ndarray:
-    """Топ-K интервалов по персистентности; существенные (inf) отбрасываются.
+    """Top-K intervals by persistence; essential ones (inf) are dropped.
 
-    Возвращает массив [M x 2] (birth, death); может быть пустым.
+    Returns an array [M x 2] (birth, death); may be empty.
     """
     finite = [(b, d) for (b, d) in diagram if math.isfinite(d)]
     if not finite:
@@ -254,10 +254,10 @@ def _trim(diagram: Sequence[Interval], k: int = 64) -> np.ndarray:
 
 def wasserstein1(diag_a: Sequence[Interval], diag_b: Sequence[Interval],
                  k: int = 64) -> float:
-    """W_1 между двумя диаграммами на обрезанных top-K (L_inf-метрика).
+    """W_1 between two diagrams on trimmed top-K (L_inf metric).
 
-    Точное минимальное сопоставление с возможностью "упасть в диагональ"
-    за p/2. Если после обрезки n != m, лишние точки сопоставляются в диагональ.
+    Exact minimum matching with the option to "fall to the diagonal"
+    at cost p/2. If after trimming n != m, the extra points are matched to the diagonal.
     """
     A = _trim(diag_a, k)
     B = _trim(diag_b, k)
@@ -268,23 +268,23 @@ def wasserstein1(diag_a: Sequence[Interval], diag_b: Sequence[Interval],
     def pa(P):
         return (P[:, 1] - P[:, 0]) / 2.0
 
-    # расширенная матрица затрат размера (n+m) x (n+m)
+    # extended cost matrix of size (n+m) x (n+m)
     N = n + m
     C = np.zeros((N, N), dtype=np.float64)
     if n and m:
-        # L_inf между точками двух диаграмм
+        # L_inf between points of the two diagrams
         diff = np.abs(A[:, None, :] - B[None, :, :])
         C[:n, :m] = diff.max(axis=2)
     if n:
-        C[:n, m:] = pa(A)[:, None]      # A -> диагональ
+        C[:n, m:] = pa(A)[:, None]      # A -> diagonal
     if m:
-        C[n:, :m] = pa(B)[None, :]      # B -> диагональ
+        C[n:, :m] = pa(B)[None, :]      # B -> diagonal
     row, col = linear_sum_assignment(C)
     return float(C[row, col].sum())
 
 
 # ──────────────────────────────────────────────────────────────
-# Ранги (соглашения v5: exp-энтропия нормализованных sigma^2)
+# Ranks (v5 conventions: exp-entropy of normalized sigma^2)
 # ──────────────────────────────────────────────────────────────
 
 def effective_rank(s: np.ndarray) -> float:
@@ -299,7 +299,7 @@ def effective_rank(s: np.ndarray) -> float:
 
 
 def d90(s: np.ndarray) -> int:
-    """Мин. число главных компонент, покрывающих 90% энергии sigma^2."""
+    """Minimum number of principal components covering 90% of the sigma^2 energy."""
     s = np.asarray(s, dtype=np.float64).ravel()
     s = s[s > 0]
     if s.size == 0:
@@ -310,7 +310,7 @@ def d90(s: np.ndarray) -> int:
 
 
 def activation_pca_d90(X: np.ndarray) -> Tuple[int, float]:
-    """d90 и effective_rank по сингулярным значениям центрированных активаций."""
+    """d90 and effective_rank from the singular values of centered activations."""
     X = np.asarray(X, dtype=np.float64)
     Xc = X - X.mean(axis=0, keepdims=True)
     s = np.linalg.svd(Xc, compute_uv=False)

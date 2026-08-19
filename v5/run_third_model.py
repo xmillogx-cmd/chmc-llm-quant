@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-run_third_model.py — Третья модель с MHA (GAP-3 fix)
+run_third_model.py — Third model with MHA (GAP-3 fix)
 =====================================================
 
-Проблема v4: Обе модели (SmolLM, Qwen2.5) используют GQA — q_proj и k_proj
-разных размеров → shared basis не работает.
+v4 problem: Both models (SmolLM, Qwen2.5) use GQA — q_proj and k_proj
+are of different sizes -> the shared basis does not work.
 
-Решение: Протестировать модель с классическим MHA где q/k/v одинаковых размеров.
-Кандидаты: gpt2 (124M), facebook/opt-125m, EleutherAI/pythia-160m
+Solution: Test a model with classical MHA where q/k/v are the same size.
+Candidates: gpt2 (124M), facebook/opt-125m, EleutherAI/pythia-160m
 
 Usage:
     python v5/run_third_model.py --model gpt2

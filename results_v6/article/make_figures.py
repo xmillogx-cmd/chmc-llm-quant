@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 """
-make_figures.py — генерация новых фигур для статьи (CPU, секунды-минуты)
+make_figures.py - generation of new figures for the article (CPU, seconds-to-minutes)
 
-fig_versions.png     — прогресс версий v1→v6 на SmolLM (PPL ratio, log-scale), линия GPTQ.
-fig_ppl.png          — CHMC vs GPTQ по 3 моделям (равный бюджет 4.29 bit/weight).
-fig_bottleneck.png   — «бутылочное горлышко» (2 панели): L — доля энергии top-3 ПК
-                       объединённого центрированного облака [pre;post] по блокам
-                       (та же величина, что «PCA-3D var» в project_3d.py);
-                       R — средний попарный косинус pre-токенов. Данные:
+fig_versions.png     - version progression v1 to v6 on SmolLM (PPL ratio, log-scale), GPTQ line.
+fig_ppl.png          - CHMC vs GPTQ across 3 models (equal budget 4.29 bit/weight).
+fig_bottleneck.png   - "bottleneck" (2 panels): L - top-3 PC energy share of the combined
+                       centered cloud [pre;post] per block (same quantity as "PCA-3D var"
+                       in project_3d.py); R - mean pairwise cosine of pre-tokens. Data:
                        results_v6/tda_analysis/tda_activations_*.pt.
 
-Вывод: results_v6/article/figures/*.png (dpi=150).
+Output: results_v6/article/figures/*.png (dpi=150).
 """
 
 import sys
@@ -47,10 +46,10 @@ def _style_ax(ax):
     ax.set_axisbelow(True)
 
 
-# ── fig 1: версии v1→v6 (SmolLM PPL ratio, log) ───────────────────────
+# ── fig 1: versions v1 to v6 (SmolLM PPL ratio, log) ───────────────────
 def make_versions():
-    versions = ["v1\nplain SVD", "v2\nadaptive rank", "v3\nчестный учёт бит",
-                "v4\ncovariance + residual", "v5\n7 стабилизаторов", "v6\nGPTQ-оптимизаторы"]
+    versions = ["v1\nplain SVD", "v2\nadaptive rank", "v3\ncorrect bit accounting",
+                "v4\ncovariance + residual", "v5\n7 stabilizers", "v6\nGPTQ optimizers"]
     ratios = [4894.0, 2.35, 1.84, 1.49, 1.29, 1.18]
     gptq = 1.176
 
@@ -64,7 +63,7 @@ def make_versions():
     ax.axhline(gptq, color=RED, ls="--", lw=1.6, zorder=4)
     ax.text(len(versions) - 0.45, gptq * 1.03, f"GPTQ = {gptq}", color=RED,
             fontsize=10, ha="right")
-    ax.text(len(versions) - 0.45, 1.176 / 1.09, "зона паритета", color="#2e7d4f",
+    ax.text(len(versions) - 0.45, 1.176 / 1.09, "parity zone", color="#2e7d4f",
             fontsize=9, ha="right")
     for xi, r in zip(x, ratios):
         lab = f"{r:.0f}×" if r >= 10 else f"{r:.2f}×"
@@ -79,10 +78,10 @@ def make_versions():
     print(f"[ok] {p}")
 
 
-# ── fig 2: CHMC vs GPTQ по моделям (равный бюджет) ────────────────────
+# ── fig 2: CHMC vs GPTQ across models (equal budget) ───────────────────
 def make_ppl():
     names = ["SmolLM-135M", "Qwen2.5-0.5B", "TinyLlama-1.1B"]
-    chmc = [1.1825, 1.174, 1.059]     # smollm: середина диапазона 1.179–1.186 (3–4 сида)
+    chmc = [1.1825, 1.174, 1.059]     # smollm: midpoint of the range 1.179-1.186 (3-4 seeds)
     gptq = [1.176, 1.141, 1.081]
 
     fig, ax = plt.subplots(figsize=(8.2, 4.6), dpi=150)
@@ -98,8 +97,8 @@ def make_ppl():
     for xi, lab in zip(x + w / 2, gptq_lab):
         ax.text(xi, float(lab) + 0.0018, lab, ha="center", va="bottom", fontsize=9.5)
 
-    # подпись выигрыша tinyllama
-    ax.annotate("победа CHMC\n(более 30σ)", xy=(2 - w / 2, 1.059),
+    # annotation for the TinyLlama win
+    ax.annotate("CHMC wins\n(by more than 30 sigma)", xy=(2 - w / 2, 1.059),
                 xytext=(1.45, 1.045), fontsize=9, color="#2e7d4f", fontweight="bold",
                 arrowprops=dict(arrowstyle="-|>", color="#2e7d4f", lw=1.2))
 
@@ -109,7 +108,7 @@ def make_ppl():
     ax.set_ylabel("PPL ratio (compressed / baseline)")
     ax.legend(fontsize=9, frameon=False, loc="upper right")
     _style_ax(ax)
-    fig.text(0.99, 0.01, "* одиночный прогон (репы впереди)", ha="right",
+    fig.text(0.99, 0.01, "* single run (repetitions to come)", ha="right",
              fontsize=8, color="#5a6472", style="italic")
     fig.tight_layout(rect=[0, 0.03, 1, 1])
     p = OUT / "fig_ppl.png"
@@ -118,12 +117,12 @@ def make_ppl():
     print(f"[ok] {p}")
 
 
-# ── fig 3: «бутылочное горлышко» по блокам (из .pt TDA) ───────────────
+# ── fig 3: "bottleneck" per block (from the TDA .pt files) ─────────────
 def make_bottleneck():
-    """Два честных профиля по всем блокам:
-    L — доля энергии top-3 ПК ОБЪЕДИНЁНОГО центрированного облака [pre;post]
-        (та же величина, что «PCA-3D var» в заголовках панелей project_3d.py);
-    R — средний попарный косинус pre-токенов того же блока (анизотропия конуса).
+    """Two honest profiles over all blocks:
+    L - top-3 PC energy share of the COMBINED centered cloud [pre;post]
+        (same quantity as "PCA-3D var" in the panel titles of project_3d.py);
+    R - mean pairwise cosine of pre-tokens of the same block (cone anisotropy).
     """
     N_SUB = 512
     data = {}
@@ -160,16 +159,16 @@ def make_bottleneck():
         axL.plot(np.arange(len(j)), j * 100, "-o", ms=3, lw=1.6, color=MCOLORS[m], label=m)
         axR.plot(np.arange(len(c)), c, "-o", ms=3, lw=1.6, color=MCOLORS[m])
     axL.set_ylim(0, 105)
-    axL.set_xlabel("decoder block index (выход блока)")
-    axL.set_ylabel("доля энергии top-3 ПК\nобъединённого облака [pre;post], %")
+    axL.set_xlabel("decoder block index (block output)")
+    axL.set_ylabel("top-3 PC energy share\nof the combined cloud [pre;post], %")
     axL.legend(fontsize=9, frameon=False)
     _style_ax(axL)
     axR.axhline(0.0, color="#c3cad4", lw=0.8)
-    axR.set_xlabel("decoder block index (выход блока)")
-    axR.set_ylabel("средний попарный косинус\npre-токенов")
+    axR.set_xlabel("decoder block index (block output)")
+    axR.set_ylabel("mean pairwise cosine\nof pre-tokens")
     _style_ax(axR)
-    fig.suptitle("«Бутылочное горлышко»: после первых 1–2 блоков почти вся сеть лежит в "
-                 "низкоразмерном конусе; края сети — изотропнее", fontsize=12)
+    fig.suptitle("Bottleneck: after the first 1-2 blocks, almost the entire network lies in a "
+                 "low-dimensional cone; the edges of the network are more isotropic", fontsize=12)
     fig.tight_layout(rect=[0, 0, 1, 0.95])
     p = OUT / "fig_bottleneck.png"
     fig.savefig(p)

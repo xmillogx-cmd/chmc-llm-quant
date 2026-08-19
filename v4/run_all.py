@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-run_all.py — Мастер-раннер CHMC v4 для обеих моделей
+run_all.py — Master runner for CHMC v4 on both models
 =====================================================
 
-Использование:
-    python run_all.py                    # Запустить всё (обе модели, все Stage)
-    python run_all.py --model smollm     # Только SmolLM-135M
-    python run_all.py --model qwen       # Только Qwen2.5-0.5B
-    python run_all.py --stage 0          # Только Stage 0 (baseline PPL)
-    python run_all.py --stages 0,1       # Stages 0 и 1
+Usage:
+    python run_all.py                    # Run everything (both models, all stages)
+    python run_all.py --model smollm     # SmolLM-135M only
+    python run_all.py --model qwen       # Qwen2.5-0.5B only
+    python run_all.py --stage 0          # Stage 0 only (baseline PPL)
+    python run_all.py --stages 0,1       # Stages 0 and 1
     python run_all.py --model smollm --stages 0,1
 """
 
@@ -35,7 +35,7 @@ MODELS = {
 
 
 def run_script(script_name, model_key):
-    """Запустить скрипт и вернуть exit code."""
+    """Run a script and return its exit code."""
     script_path = V4_DIR / script_name
     if not script_path.exists():
         print(f"[ERR] Script not found: {script_path}")

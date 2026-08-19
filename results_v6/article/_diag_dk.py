@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""d_k по блокам: минимальное k, при котором top-k ПК объясняет >= 90% / >= 50% энергии.
-Проверка утверждения статьи «9 из 576 измерений» (pre-активации, centered)."""
+"""d_k per block: the minimum k such that the top-k PCs explain >= 90% / >= 50% of the energy.
+Verifying the article's claim "9 out of 576 dimensions" (pre-activations, centered)."""
 import numpy as np
 import torch
 

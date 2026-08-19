@@ -1,13 +1,13 @@
 """
 chmc_pipeline.py — Covariance/Hessian-Aware Manifold Compression v1
 
-Реализует 4 метода сжатия:
-  1. Plain SVD (baseline для сравнения)
+Implements 4 compression methods:
+  1. Plain SVD (baseline for comparison)
   2. Covariance Projection
   3. Weighted SVD
   4. Covariance Low-Rank + Residual Quantization
 
-Результаты -> results_v2/
+Results -> results_v2/
 """
 
 import csv
@@ -106,11 +106,11 @@ def compute_perplexity(model, tokenizer, text):
 
 
 # ============================================================
-# Calibration — собрать входы через hooks
+# Calibration — collect inputs via hooks
 # ============================================================
 
 def collect_calibration_inputs(model, tokenizer, num_sequences=128):
-    """Собрать входы для каждого Linear слоя."""
+    """Collect inputs for each Linear layer."""
     texts = [
         "Artificial intelligence is transforming how we interact with technology in everyday life.",
         "The development of large language models has accelerated dramatically over the past decade.",
@@ -142,12 +142,12 @@ def collect_calibration_inputs(model, tokenizer, num_sequences=128):
                 continue
             hooks.append(module.register_forward_hook(make_hook(name)))
 
-    # Прогнать калибровочные данные
+    # Run the calibration data through the model
     all_text = "\n\n".join(texts * (num_sequences // len(texts) + 1))
     enc = tokenizer(all_text, return_tensors="pt", truncation=True, max_length=512)
 
     with torch.no_grad():
-        # Разбиваем на батчи чтобы не переполнить память
+        # Split into batches to avoid overflowing memory
         batch_size = 32
         ids = enc.input_ids[0]
         for b in range(0, len(ids), batch_size):
@@ -158,7 +158,7 @@ def collect_calibration_inputs(model, tokenizer, num_sequences=128):
     for h in hooks:
         h.remove()
 
-    # Конкатенируем и сэмплируем до 50k токенов на слой
+    # Concatenate and sample down to 50k tokens per layer
     MAX_TOKENS = 50000
     final_inputs = {}
     total_layers = len(inputs_by_name)
@@ -179,7 +179,7 @@ def collect_calibration_inputs(model, tokenizer, num_sequences=128):
 # ============================================================
 
 def compute_cov_stats(inputs_by_name, lam=1e-3):
-    """Посчитать ковариационные спектры для каждого слоя."""
+    """Compute covariance spectra for each layer."""
     stats = []
 
     for name, X in inputs_by_name.items():
@@ -198,7 +198,7 @@ def compute_cov_stats(inputs_by_name, lam=1e-3):
         top32_e = float(vals[:32].sum() / total_var) if len(vals) >= 32 else 1.0
         top64_e = float(vals[:64].sum() / total_var) if len(vals) >= 64 else 1.0
 
-        # Effective rank: exp(H) где H — энтропия нормализованных собственных значений
+        # Effective rank: exp(H) where H is the entropy of the normalized eigenvalues
         probs = (vals / (total_var + 1e-8)).clamp(min=1e-10)
         eff_rank = float(torch.exp(-(probs * probs.log()).sum()))
 
@@ -219,11 +219,11 @@ def compute_cov_stats(inputs_by_name, lam=1e-3):
 
 
 # ============================================================
-# Методы сжатия
+# Compression methods
 # ============================================================
 
 def plain_svd(W, rank):
-    """Method 1: обычный SVD."""
+    """Method 1: plain SVD."""
     if rank >= min(W.shape):
         return W.clone()
     U, S, Vh = torch.linalg.svd(W.float(), full_matrices=False)
@@ -299,18 +299,18 @@ def weighted_svd_residual_q(W, X, rank, bits, lam=1e-3):
 
 
 # ============================================================
-# Метрики слоя
+# Layer metrics
 # ============================================================
 
 def compute_layer_metrics(W_orig, W_compressed, X):
-    """Посчитать layerwise метрики."""
+    """Compute the layerwise metrics."""
     Y_true = W_orig.float() @ X.T  # [out, N]
     Y_hat = W_compressed.float() @ X.T
 
     # Output reconstruction error
     output_err = float(((Y_true - Y_hat).norm() / (Y_true.norm() + 1e-8)).item())
 
-    # Cosine similarity выходов
+    # Cosine similarity of the outputs
     cos_sims = []
     for i in range(min(100, Y_true.shape[1])):
         c = float((Y_true[:, i] * Y_hat[:, i]).sum() /
@@ -325,23 +325,23 @@ def compute_layer_metrics(W_orig, W_compressed, X):
 
 
 def compute_compression_bits(W_orig, method_info):
-    """Считать биты сжатого представления."""
+    """Count the bits of the compressed representation."""
     out_f, in_f = W_orig.shape
     orig_bits = out_f * in_f * 16
 
     if method_info["method"] == "plain_svd" or method_info["method"] == "cov_proj":
         rank = method_info["rank"]
-        # low-rank: out*r + r*in в FP32 (для хранения)
+        # low-rank: out*r + r*in stored in FP32
         comp_bits = (out_f * rank + rank * in_f) * 16
     elif method_info["method"].startswith("weighted_svd"):
         rank = method_info["rank"]
         bits = method_info.get("bits", 16)
-        # low-rank factors в bits + covariance basis storage
+        # low-rank factors in bits + covariance basis storage
         comp_bits = (out_f * rank + rank * in_f) * bits
     elif method_info["method"].startswith("cov_proj_residual"):
         rank = method_info["rank"]
         bits = method_info.get("bits", 4)
-        # W_low в FP16 + residual в bits
+        # W_low in FP16 + residual in bits
         comp_bits = (out_f * rank + rank * in_f) * 16 + out_f * in_f * bits
     elif method_info["method"].startswith("weighted_svd_residual"):
         rank = method_info["rank"]
@@ -354,11 +354,11 @@ def compute_compression_bits(W_orig, method_info):
 
 
 # ============================================================
-# Главный цикл
+# Main loop
 # ============================================================
 
 def apply_compression(model, inputs_by_name, method_fn, method_info):
-    """Применить метод сжатия ко всем слоям."""
+    """Apply the compression method to all layers."""
     matrices_compressed = 0
     layer_metrics = []
 
@@ -399,7 +399,7 @@ def main():
     print("  CHMC v1 — Covariance-Aware Manifold Compression")
     print("=" * 60)
 
-    # Загрузка модели и токенайзера
+    # Load the model and tokenizer
     tokenizer = load_tokenizer()
     eval_text = get_eval_text()
 
@@ -413,7 +413,7 @@ def main():
         base_ppl = json.load(f)["perplexity"]
     print(f"\n  Baseline PPL: {base_ppl}")
 
-    # ── Сбор калибровочных входов ──────────────────────────────
+    # ── Collecting calibration inputs ──────────────────────────────
     print("\n[1/4] Collecting calibration inputs...")
     model = load_model()
     inputs_by_name = collect_calibration_inputs(model, tokenizer, num_sequences=256)
@@ -421,23 +421,23 @@ def main():
     if DEVICE == "cuda":
         torch.cuda.empty_cache()
 
-    # ── Ковариационные спектры ────────────────────────────────
+    # ── Covariance spectra ────────────────────────────────
     print("\n[2/4] Computing covariance statistics...")
     cov_stats = compute_cov_stats(inputs_by_name)
 
     with open(RESULTS_V2 / "cov_stats.json", "w") as f:
         json.dump(cov_stats, f, indent=2)
 
-    # Статистика по всем слоям
+    # Statistics across all layers
     d90_vals = [s["d90"] for s in cov_stats]
     eff_ranks = [s["effective_rank"] for s in cov_stats]
     print(f"  Layer count: {len(cov_stats)}")
     print(f"  d90 range: [{min(d90_vals)}, {max(d90_vals)}], median={sorted(d90_vals)[len(d90_vals)//2]}")
     print(f"  effective_rank range: [{min(eff_ranks):.1f}, {max(eff_ranks):.1f}]")
 
-    # ── Методы сжатия ────────────────────────────────────────
+    # ── Compression methods ────────────────────────────────────────
     RANKS = [8, 16, 32]
-    BITS_RESIDUAL = [4]  # можно расширить до [4, 3, 2]
+    BITS_RESIDUAL = [4]  # can be extended to [4, 3, 2]
 
     methods = []
     for r in RANKS:
@@ -477,7 +477,7 @@ def main():
         # PPL evaluation
         ppl = compute_perplexity(model, tokenizer, eval_text)
 
-        # Средние метрики по слоям
+        # Average metrics across layers
         avg_output_err = sum(m["output_error"] for m in layer_metrics) / max(1, len(layer_metrics))
         avg_cos_sim = sum(m["cos_sim"] for m in layer_metrics) / max(1, len(layer_metrics))
         avg_comp_ratio = sum(m["compression_ratio"] for m in layer_metrics) / max(1, len(layer_metrics))
@@ -515,7 +515,7 @@ def main():
         if DEVICE == "cuda":
             torch.cuda.empty_cache()
 
-    # ── Сохранение результатов ────────────────────────────────
+    # ── Saving results ────────────────────────────────
     print("\n[4/4] Saving results...")
 
     with open(RESULTS_V2 / "compression_results.json", "w") as f:
@@ -528,7 +528,7 @@ def main():
             writer.writeheader()
             writer.writerows(csv_rows)
 
-    # Layerwise metrics для лучшего метода
+    # Layerwise metrics for the best method
     best = min(all_results, key=lambda e: e["ppl_ratio_to_base"])
     print(f"\n  Best method: {best['method']} PPL={best['perplexity']} "
           f"ratio={best['ppl_ratio_to_base']}x cos_sim={best['avg_cos_sim']:.3f}")
@@ -538,10 +538,10 @@ def main():
 
 
 def generate_summary(results, base_ppl, cov_stats):
-    """Сгенерировать summary.md."""
+    """Generate summary.md."""
     best = min(results, key=lambda e: e["ppl_ratio_to_base"])
 
-    # Старые результаты для сравнения
+    # Old results for comparison
     old_lr_path = BASE_DIR / "results" / "lowrank_eval.json"
     old_scalar_path = BASE_DIR / "results" / "quant_scalar.json"
 
@@ -615,7 +615,7 @@ def generate_summary(results, base_ppl, cov_stats):
         lines.append(f"- {'[OK] Better than scalar 4-bit' if better else '[FAIL] Worse than scalar 4-bit'}")
         lines.append("")
 
-    # Вердикт
+    # Verdict
     lines.append("## 7. Verdict")
     ratio = best["ppl_ratio_to_base"]
     cos_sim = best["avg_cos_sim"]

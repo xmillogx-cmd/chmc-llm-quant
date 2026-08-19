@@ -1,6 +1,6 @@
 """
-eval_ppl.py — Базовая perplexity без сжатия (точка отсчёта).
-Результат → results/ppl_base.json
+eval_ppl.py — Baseline perplexity without compression (reference point).
+Result → results/ppl_base.json
 """
 
 import json
@@ -19,7 +19,7 @@ RESULTS.mkdir(exist_ok=True)
 
 
 def get_eval_text() -> str:
-    """wikitext-2 test split или fallback."""
+    """wikitext-2 test split or a fallback."""
     try:
         print("\n  ↓ Loading wikitext-2...")
         data = load_dataset("wikitext", "wikitext-2-raw-v1", split="test", trust_remote_code=True)
@@ -33,7 +33,7 @@ def get_eval_text() -> str:
 
 
 def compute_perplexity(model, tokenizer, text, max_len=1024):
-    """Perplexity с overlapping windows + прогресс-бар."""
+    """Perplexity with overlapping windows + progress bar."""
     enc = tokenizer(text, return_tensors="pt")
     ids = enc.input_ids[0]
     seq_len = ids.size(0)
@@ -47,7 +47,7 @@ def compute_perplexity(model, tokenizer, text, max_len=1024):
         if end - begin >= 32:
             chunks.append((begin, end))
 
-    # Последний чанк
+    # Last chunk
     if chunks and chunks[-1][1] < seq_len:
         remain = seq_len - chunks[-1][1]
         if remain >= 32:
@@ -72,7 +72,7 @@ def main():
     print("  CMQ — Baseline Perplexity")
     print("=" * 60)
 
-    # ── Загрузка модели (с прогрессом + ретраями) ─────────────
+    # ── Model loading (with progress + retries) ─────────────
     from model_loader import load_tokenizer
     tokenizer = load_tokenizer()
     model = load_model()

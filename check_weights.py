@@ -1,6 +1,6 @@
 """
-check_weights.py — Low-rank структура весов (SVD energy).
-Результат → results/geometry_weights.json
+check_weights.py — Low-rank structure of the weights (SVD energy).
+Result → results/geometry_weights.json
 """
 
 import json
@@ -20,13 +20,13 @@ def main():
     print("  CMQ — Weight Low-Rank Structure")
     print("=" * 60)
 
-    # ── Загрузка модели (с прогрессом + ретраями) ─────────────
+    # ── Model loading (with progress + retries) ─────────────
     model = load_model()
 
     records = []
     skip_reasons = {"non_2d": 0, "embedding": 0, "too_small": 0, "svd_fail": 0}
 
-    # Собираем список матриц
+    # Build the list of matrices
     matrices = []
     for name, param in model.named_parameters():
         if param.ndim != 2:
@@ -43,7 +43,7 @@ def main():
     print(f"\n  Matrices to analyze: {len(matrices)}")
     print(f"  Skipped: non_2d={skip_reasons['non_2d']}, embed={skip_reasons['embedding']}, small={skip_reasons['too_small']}")
 
-    # ── SVD по каждой матрице ─────────────────────────────────
+    # ── SVD per matrix ─────────────────────────────────
     for name, param in tqdm(matrices, desc="SVD", unit="matrix", ncols=80):
         w = param.float()
         try:
@@ -72,7 +72,7 @@ def main():
             "r90": r90, "r95": r95,
         })
 
-    # ── Агрегация ─────────────────────────────────────────────
+    # ── Aggregation ─────────────────────────────────────────────
     if records:
         n = len(records)
         summary = {
@@ -94,9 +94,9 @@ def main():
 
         e64 = summary["mean_e64"]
         if e64 > 0.6:
-            summary["verdict"] = "[OK] very_low_rank - rank 64 покрывает энергию"
+            summary["verdict"] = "[OK] very_low_rank - rank 64 covers the energy"
         elif e64 > 0.3:
-            summary["verdict"] = "[WARN] moderate - нужен больший rank"
+            summary["verdict"] = "[WARN] moderate - a larger rank is needed"
         else:
             summary["verdict"] = "[FAIL] weak low-rank"
     else:

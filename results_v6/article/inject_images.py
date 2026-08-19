@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-inject_images.py — собирает index.html из template.html + base64-картинок.
+inject_images.py — assembles index.html from template.html + base64 images.
 
-Подстановка 7 плейсхолдеров @@IMG_*@@ в data:image/png;base64,...:
+Substitutes the 7 placeholders @@IMG_*@@ with data:image/png;base64,...:
   IMG_SMOLLM_3D / IMG_QWEN_3D / IMG_TINYLLAMA_3D — results_v6/tda_3d/*_activations_3d.png
   IMG_BOTTLENECK / IMG_VERSIONS / IMG_PPL        — results_v6/article/figures/*.png
   IMG_DRIFT                                       — results_v6/drift_correction/step1_diagnostics/drift_spectrum_plots.png
@@ -29,14 +29,14 @@ MAP = {
 
 html = (HERE / "template.html").read_text(encoding="utf-8")
 for ph, png in MAP.items():
-    assert png.exists(), f"нет файла: {png}"
+    assert png.exists(), f"file not found: {png}"
     b64 = base64.b64encode(png.read_bytes()).decode("ascii")
     n = html.count(ph)
-    assert n == 1, f"{ph}: найдено {n} (ожидалось 1)"
+    assert n == 1, f"{ph}: found {n} (expected 1)"
     html = html.replace(ph, f"data:image/png;base64,{b64}")
 
 leftover = [tok for tok in ("@@IMG", "@@") if tok in html]
-assert not leftover, f"остались плейсхолдеры: {leftover}"
+assert not leftover, f"placeholders left: {leftover}"
 
 out = HERE / "index.html"
 out.write_text(html, encoding="utf-8")

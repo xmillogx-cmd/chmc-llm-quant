@@ -1,6 +1,6 @@
 """
-lowrank_quant.py — Low-rank + quantization комбинация (CMQ).
-Результат → results/lowrank_quant.json
+lowrank_quant.py — Low-rank + quantization combination (CMQ).
+Result → results/lowrank_quant.json
 """
 
 import json
@@ -74,7 +74,7 @@ def quantize_symmetric(w, bits):
 
 
 def lowrank_quant_weight(w, rank, bits):
-    """SVD → квантование факторов → реконструкция."""
+    """SVD → quantization of the factors → reconstruction."""
     if rank >= min(w.shape):
         return w
     wf = w.float().cpu()
@@ -97,7 +97,7 @@ def main():
     tokenizer = load_tokenizer()
     text = get_eval_text()
 
-    # Определяем допустимые ранги
+    # Determine the allowed ranks
     probe = load_model(max_retries=2)
     min_dim = None
     for p in probe.parameters():

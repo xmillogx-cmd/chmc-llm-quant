@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ЧИСТЫЙ per-block профиль (правильный SVD: _, s, _ = svd):
+"""CLEAN per-block profile (correct SVD: _, s, _ = svd):
 pre-alone / post-alone / combined [pre;post] centered top-3 + mean cos(pre_i, post_i)."""
 import numpy as np
 import torch

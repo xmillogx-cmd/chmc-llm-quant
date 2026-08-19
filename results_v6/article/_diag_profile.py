@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Полный per-block профиль (joint top-3 + mean cos) для проверки подписей."""
+"""Full per-block profile (joint top-3 + mean cos) for verifying the labels."""
 import numpy as np
 import torch
 

@@ -1,33 +1,33 @@
 #!/usr/bin/env python3
 """
-run_baseline_upgrade.py — апгрейд plain CHMC v6 baseline (без TurboQuant-патчей)
+run_baseline_upgrade.py — upgrading the plain CHMC v6 baseline (no TurboQuant patches)
 ================================================================================
 
-Цель: закрыть разрыв до GPTQModel (SmolLM 1.2146 -> < 1.1761) улучшением САМОГО
-baseline, а не патчами. Два рычага:
+Goal: close the gap to GPTQModel (SmolLM 1.2146 -> < 1.1761) by improving the BASELINE
+itself, not with patches. Two levers:
 
-  A1  strict_sequential  — настоящий GPTQ (колонка-за-колонкой, полный H^-1,
-                           error-feedback во ВСЕ оставшиеся колонки).
-                           Сейчас baseline использует block-компенсацию (BLOCK=32)
-                           — приближение: внутри блока колонки не компенсируют
-                           друг друга. Strict точнее.
-  A4  dampening grid     — подбор λ (демпфирование H = X^T X/n + λI) под данные.
-                           Сейчас λ=0.01 фиксирован.
+  A1  strict_sequential  — true GPTQ (column-by-column, full H^-1,
+                           error-feedback into ALL remaining columns).
+                           Currently the baseline uses block compensation (BLOCK=32)
+                           — an approximation: within a block the columns do not
+                           compensate for each other. Strict is more accurate.
+  A4  dampening grid     — data-driven choice of λ (damping H = X^T X/n + λI).
+                           Currently λ=0.01 is fixed.
 
-Все конфиги — при РАВНОМ BPW (target 4.2875 = GPTQModel 4-bit/group-128).
-QJL НЕ используется (фундаментально не подходит для весов — см. REPORT).
+All configs run at EQUAL BPW (target 4.2875 = GPTQModel 4-bit/group-128).
+QJL is NOT used (fundamentally unsuitable for weights — see REPORT).
 
-Порядок:
-  1. ref_baseline          (block,  λ=0.01)  — референс (должен дать ~1.2146)
+Order:
+  1. ref_baseline          (block,  λ=0.01)  — reference (should give ~1.2146)
   2. strict_gptq           (strict, λ=0.01)  — A1
   3. strict_gptq_damp0001  (strict, λ=0.001) — A4
   4. strict_gptq_damp005   (strict, λ=0.05)  — A4
   5. strict_gptq_damp01    (strict, λ=0.1)   — A4
-  6. Лучший vs GPTQ (SmolLM)
-  7. Лучший на Qwen-0.5B + TinyLlama-1.1B
+  6. Best vs GPTQ (SmolLM)
+  7. Best on Qwen-0.5B + TinyLlama-1.1B
 
-Запускает ПОЛЬЗОВАТЕЛЬ (агент разделяет GPU и рискует OOM).
-Артефакты: results_v6/baseline_upgrade/
+Run by the USER (the agent shares the GPU and risks OOM).
+Artifacts: results_v6/baseline_upgrade/
 
 Usage:
     python run_baseline_upgrade.py

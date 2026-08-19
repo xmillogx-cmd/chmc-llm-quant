@@ -2,12 +2,12 @@
 setlocal enabledelayedexpansion
 chcp 65001 >nul
 rem ============================================================
-rem  TDA-прогон по моделям CHMC v6 (BPW=4.2875)
-rem  Запуск: двойной клик ИЛИ из консоли:
-rem     tda_analysis\run_tda_all.bat                          - все 3 модели
-rem     tda_analysis\run_tda_all.bat smollm-135m              - одна модель
-rem     tda_analysis\run_tda_all.bat qwen2.5-0.5b tinyllama-1.1b - несколько
-rem  Не запускать параллельно с другими GPU-задачами.
+rem  TDA run over the CHMC v6 models (BPW=4.2875)
+rem  Launch: double-click OR from the console:
+rem     tda_analysis\run_tda_all.bat                          - all 3 models
+rem     tda_analysis\run_tda_all.bat smollm-135m              - one model
+rem     tda_analysis\run_tda_all.bat qwen2.5-0.5b tinyllama-1.1b - several
+rem  Do not run in parallel with other GPU jobs.
 rem ============================================================
 
 cd /d "%~dp0.."
@@ -15,16 +15,16 @@ set "PY=venv\Scripts\python.exe"
 set "OUTDIR=results_v6\tda_analysis"
 
 echo ============================================================
-echo  Логи шагов: tda_analysis\logs (collect_ и analyze_, имя с моделью и временем)
+echo  Step logs: tda_analysis\logs (collect_ and analyze_, name includes model and time)
 echo ============================================================
 echo.
 echo ============================================================
-echo  ШАГ 0: CPU-тесты TDA-ядра (~30 сек)
+echo  STEP 0: CPU tests of the TDA core (~30 sec)
 echo ============================================================
 %PY% tda_analysis\tests\test_tda_core.py
 if errorlevel 1 (
     echo.
-    echo ОШИБКА: тесты ядра не прошли - GPU-прогон НЕ запускается.
+    echo ERROR: core tests failed - the GPU run will NOT be started.
     pause
     exit /b 1
 )
@@ -42,7 +42,7 @@ for %%M in (%MODELS%) do (
 
 echo.
 echo ============================================================
-echo  ВСЁ ГОТОВО. Артефакты в %OUTDIR% (5 файлов на модель):
+echo  ALL DONE. Artifacts in %OUTDIR% (5 files per model):
 echo    tda_activations_*.pt, tda_layer_table_*.csv,
 echo    tda_summary_*.json, tda_diagrams_*.png, tda_report_*.md
 echo ============================================================
@@ -54,20 +54,20 @@ rem ------------------------------------------------------------
 set "MODEL=%~1"
 echo.
 echo ============================================================
-echo  МОДЕЛЬ: %MODEL%
-echo  [1/2] collect_activations.py (GPU, ~3-8 мин)
+echo  MODEL: %MODEL%
+echo  [1/2] collect_activations.py (GPU, ~3-8 min)
 echo ============================================================
 %PY% tda_analysis\collect_activations.py --model %MODEL%
 if errorlevel 1 (
-    echo ОШИБКА: collect для %MODEL% не удался - дальше не перехожу.
+    echo ERROR: collect for %MODEL% failed - not proceeding further.
     exit /b 1
 )
 echo ============================================================
-echo  [2/2] analyze.py (CPU, ~2-5 мин)
+echo  [2/2] analyze.py (CPU, ~2-5 min)
 echo ============================================================
 %PY% tda_analysis\analyze.py --data "%OUTDIR%\tda_activations_%MODEL%.pt"
 if errorlevel 1 (
-    echo ОШИБКА: analyze для %MODEL% не удался.
+    echo ERROR: analyze for %MODEL% failed.
     exit /b 1
 )
 exit /b 0

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Извлекает вербальный черновик статьи (user message, 2026-08-18T13:39) из
-транскрипта сессии в draft_source.txt для построения HTML."""
+"""Extracts the verbal article draft (user message, 2026-08-18T13:39) from the
+session transcript into draft_source.txt for building the HTML."""
 import json
 import sys
 
@@ -22,7 +22,7 @@ with open(SRC, "r", encoding="utf-8") as f:
 
         def collect(obj):
             if isinstance(obj, str):
-                if "Геометрический апокалипсис" in obj and "Пролог" in obj:
+                if "\u0413\u0435\u043e\u043c\u0435\u0442\u0440\u0438\u0447\u0435\u0441\u043a\u0438\u0439 \u0430\u043f\u043e\u043a\u0430\u043b\u0438\u043f\u0441\u0438\u0441" in obj and "\u041f\u0440\u043e\u043b\u043e\u0433" in obj:
                     cands.append((i, obj))
             elif isinstance(obj, dict):
                 for v in obj.values():
@@ -36,8 +36,8 @@ with open(SRC, "r", encoding="utf-8") as f:
 if not cands:
     raise SystemExit("draft message not found")
 line_no, text = max(cands, key=lambda t: len(t[1]))
-# обрезаем инструкцию после P.S. (она не часть статьи)
-cut = text.find("Так а тепрь")
+# cut off the instruction after P.S. (it is not part of the article)
+cut = text.find("\u0422\u0430\u043a \u0430 \u0442\u0435\u043f\u0440\u044c")
 if cut > 0:
     text = text[:cut].rstrip()
 with open(OUT, "w", encoding="utf-8") as f:

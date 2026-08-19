@@ -1,12 +1,12 @@
 """
-eval_ppl_v2.py — Правильный baseline perplexity.
+eval_ppl_v2.py — Correct baseline perplexity.
 
-Исправления:
-- sliding window с overlap
-- -100 для overlap токенов (не считать loss дважды)
-- wikitext-2 test split с проверкой качества текста
-- разнообразный fallback если wikitext недоступен
-Результат -> results_v2/eval_config.json + results_v2/ppl_base.json
+Fixes:
+- sliding window with overlap
+- -100 for the overlap tokens (do not count the loss twice)
+- wikitext-2 test split with a text quality check
+- diverse fallback if wikitext is unavailable
+Result -> results_v2/eval_config.json + results_v2/ppl_base.json
 """
 
 import json
@@ -22,15 +22,15 @@ from model_loader import load_model, load_tokenizer, BASE_DIR, DEVICE, DTYPE
 RESULTS_V2 = BASE_DIR / "results_v2"
 RESULTS_V2.mkdir(exist_ok=True)
 
-# Параметры evaluation
+# Evaluation parameters
 MAX_LEN = 512
 STRIDE = 256
 
 
 def get_eval_text() -> str:
-    """wikitext-2 test split или разнообразный fallback."""
-    # wikitext и ptb сломаны в datasets>=3.x (no script support)
-    # Используем разнообразный fallback с множеством тем
+    """wikitext-2 test split or a diverse fallback."""
+    # wikitext and ptb are broken in datasets>=3.x (no script support)
+    # Use a diverse fallback covering many topics
     diverse_sentences = [
         "Artificial intelligence is transforming how we interact with technology in everyday life.",
         "The development of large language models has accelerated dramatically over the past decade.",
@@ -63,8 +63,8 @@ def get_eval_text() -> str:
         "Sociology examines social institutions, group dynamics, and the forces that shape human communities over time.",
         "Mathematics provides abstract frameworks for modeling relationships, quantities, structures, and logical reasoning.",
     ]
-    # Собираем длинный текст из разнообразных тем, повторяя цикл несколько раз
-    # Каждый проход соединяет разные предложения в абзацы
+    # Build a long text from diverse topics, repeating the cycle several times
+    # Each pass joins different sentences into paragraphs
     paragraphs = []
     for cycle in range(8):
         batch = diverse_sentences[cycle % len(diverse_sentences) : (cycle + 6) % (len(diverse_sentences) + 6)]
@@ -74,7 +74,7 @@ def get_eval_text() -> str:
         paragraphs.append(" ".join(batch))
 
     text = "\n\n".join(paragraphs)
-    # Дополняем до ~15k токенов (достаточно для стабильного PPL)
+    # Pad to ~15k tokens (enough for a stable PPL)
     while len(text) < 80000:
         text += "\n\n" + text
 
@@ -83,7 +83,7 @@ def get_eval_text() -> str:
 
 
 def compute_perplexity(model, tokenizer, text, max_len=MAX_LEN, stride=STRIDE):
-    """Perplexity с sliding window и -100 для overlap токенов."""
+    """Perplexity with a sliding window and -100 for the overlap tokens."""
     enc = tokenizer(text, return_tensors="pt")
     ids = enc.input_ids[0]
     seq_len = ids.size(0)
@@ -92,7 +92,7 @@ def compute_perplexity(model, tokenizer, text, max_len=MAX_LEN, stride=STRIDE):
     total_tok = 0
     chunks = []
 
-    # Sliding window с overlap
+    # Sliding window with overlap
     for begin in range(0, seq_len - max_len + 1, stride):
         end = min(begin + max_len, seq_len)
         if end - begin >= 32:
@@ -103,17 +103,17 @@ def compute_perplexity(model, tokenizer, text, max_len=MAX_LEN, stride=STRIDE):
     for begin, end in tqdm(chunks, desc="PPL", unit="win", ncols=80):
         chunk = ids[begin:end].unsqueeze(0).to(DEVICE)
 
-        # Создаём labels: -100 для overlap токенов (первые stride токенов не считаются)
+        # Build labels: -100 for the overlap tokens (the first stride tokens are not counted)
         labels = chunk.clone()
         if begin > 0 and stride < max_len:
-            # Первые (max_len - stride) токенов — это overlap с предыдущим окном
+            # The first (max_len - stride) tokens are the overlap with the previous window
             overlap = max_len - stride
             labels[:, :overlap] = -100
 
         with torch.no_grad():
             out = model(chunk, labels=labels)
 
-        # Считаем только non-overlap токены
+        # Count only the non-overlap tokens
         valid_count = (labels != -100).sum().item()
         total_nll += out.loss.item() * valid_count
         total_tok += valid_count
@@ -150,7 +150,7 @@ def main():
         "eval_source": "wikitext-2" if len(text) > 10000 else "diverse_fallback",
     }
 
-    # Сохраняем config для воспроизводимости
+    # Save the config for reproducibility
     with open(RESULTS_V2 / "eval_config.json", "w") as f:
         json.dump(result, f, indent=2)
 
@@ -164,7 +164,7 @@ def main():
         json.dump(result, f, indent=2)
     print(f"\n  -> {out}")
 
-    # Также обновим старый baseline для обратной совместимости
+    # Also update the old baseline for backward compatibility
     import shutil
     old_out = BASE_DIR / "results" / "ppl_base.json"
     if old_out.exists():

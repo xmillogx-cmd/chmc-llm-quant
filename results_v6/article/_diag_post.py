@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Кто несёт концентрацию: pre-alone vs post-alone (centered top-3), 4 блока на модель."""
+"""Who carries the concentration: pre-alone vs post-alone (centered top-3), 4 blocks per model."""
 import numpy as np
 import torch
 

@@ -2,23 +2,23 @@
 """
 CHMC v4 — Covariance-Aware Manifold Compression v4
 ===================================================
-Цель: доказать что adaptive CHMC бьёт scalar_q4 при равном бит-бюджете.
+Goal: prove that adaptive CHMC beats scalar_q4 at an equal bit budget.
 
-Ключевые нововведения:
-  1. Локальная калибровка (layerwise + blockwise)
-  2. Sparse compensation (low-rank аппроксимирует W - R_sparse)
-  3. Shared basis для q/k/v проекций
-  4. Rank-1 структурная замена с валидацией на 4096+ токенах
-  5. Честный accounting (B_compressed = B_lowrank + B_residual + B_scales + B_indices)
+Key innovations:
+  1. Local calibration (layerwise + blockwise)
+  2. Sparse compensation (low-rank approximates W - R_sparse)
+  3. Shared basis for the q/k/v projections
+  4. Rank-1 structural replacement with validation on 4096+ tokens
+  5. Honest accounting (B_compressed = B_lowrank + B_residual + B_scales + B_indices)
 
-Исправленные баги из v2/v3:
-  - ablation collapse (uniform_dense теперь использует uniform_rank, а не rank_alloc_map)
-  - sequential calibration (реально перебирает входы после сжатия предыдущих слоёв)
-  - accounting inflation (dense INT4 ceiling ~3.5-4.5x, не 151x)
-  - baseline PPL instability (3 прогона, std < 5%)
+Fixed bugs from v2/v3:
+  - ablation collapse (uniform_dense now uses uniform_rank instead of rank_alloc_map)
+  - sequential calibration (truly re-collects the inputs after compressing the preceding layers)
+  - accounting inflation (dense INT4 ceiling ~3.5-4.5x, not 151x)
+  - baseline PPL instability (3 runs, std < 5%)
 
-Модели: HuggingFaceTB/SmolLM-135M, Qwen/Qwen2.5-0.5B
-Устройство: CPU-only, float32
+Models: HuggingFaceTB/SmolLM-135M, Qwen/Qwen2.5-0.5B
+Device: CPU-only, float32
 """
 
 import os
@@ -146,10 +146,10 @@ def honest_compression_bits(
     group_size: int = 64,
 ) -> Dict[str, float]:
     """
-    Честный подсчёт бит для сжатого веса.
+    Honest bit count for the compressed weight.
 
-    FIX v2: dense residual НЕ получает index_bits overhead.
-    Ceiling при dense INT4 ~3.5-4.5x (не 151x).
+    FIX v2: the dense residual does NOT get the index_bits overhead.
+    The ceiling at dense INT4 is ~3.5-4.5x (not 151x).
     """
     original = original_bits * out_f * in_f
 
@@ -160,7 +160,7 @@ def honest_compression_bits(
     n_residual = int(residual_density * out_f * in_f)
     residual_vals = n_residual * residual_bits
 
-    # Index overhead — ТОЛЬКО для разреженного residual
+    # Index overhead — ONLY for the sparse residual
     is_sparse = residual_density < 0.99
     if is_sparse:
         # CoO format: row_idx + col_idx per non-zero

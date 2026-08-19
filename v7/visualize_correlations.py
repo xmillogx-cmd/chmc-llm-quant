@@ -3,7 +3,7 @@
 Reads the CSV artifacts from results_v6/correlation_analysis/ (produced by
 correlation_analysis.py), draws 4 annotated heatmaps (PNG) and writes a
 self-contained HTML report CORRELATION_REPORT.html: per-matrix "how to read"
-notes, top-pairs tables with n and |t|, parameter glossary ("что и зачем")
+notes, top-pairs tables with n and |t|, parameter glossary ("what and why")
 and numbered footnotes.
 
 No GPU / no torch — matplotlib + stdlib only.
@@ -146,33 +146,33 @@ def draw_heatmap(fname, cols, mat, title, subtitle, cbar_label, footnotes):
 
 # ---------------------------------------------------------------- HTML report
 
-GLOSSARY = {  # column -> "что это и зачем в анализе"
-    "ratio": "Потеря качества от квантизации: compressed_ppl / baseline_ppl. Ниже — лучше; сравнивается с GPTQ при равном BPW [1].",
-    "margin_vs_gptq": "gptq_ref − ratio; >0 означает, что CHMC бьёт GPTQ при равном BPW 4.2875 [3].",
-    "beats_gptq": "Бинарный индикатор «бьёт GPTQ» (margin>0); его корреляции ≈ знаку margin.",
-    "gptq_ref": "GPTQ-референс модели — константа, не параметр; его корреляции отражают смешение моделей в наборе [6].",
-    "dampening": "Регуляризация Hessian'а λ·diag(H) перед инверсией. Больше = консервативнее компенсация ошибки; 0.1 лучший в среднем (77% бьют GPTQ).",
-    "niter": "Число итераций уточнения ошибок в стиле GPTQ по колонкам; тестировался только в dedicated-экспериментах (n=57) [7].",
-    "strict_sequential": "1 — строго построчно, 0 — блоками. Эффект модель-зависим: лучше на SmolLM, хуже на qwen3-4b.",
-    "group_dim": "Группировка квантизации: 0 (CHMC) — вдоль выходных каналов, 1 (GPTQ) — вдоль входных признаков.",
-    "hadamard": "B1-вариант: SVD в исходном конусе + Hadamard-вращение остатка. Сильнейший негативный эффект на margin (r=−0.74).",
-    "cone_aware": "Cone-Aware вариант с учётом BPW-overhead; ухудшает результат (r=+0.49 c ratio).",
-    "qjl": "C3 patch 2: остаток как 1-битные знаки случайных QJL-проекций. Катастрофа в тестах (ratio до 12541) [4].",
-    "lloyd_max": "Квантователь Ллойда–Макса вместо равномерного round() на повёрнутом распределении.",
-    "ip_metric": "Экспериментальный вариант метрики ошибки; значимого эффекта не найдено.",
-    "whitening": "v7: whitening данных Hessian'а по полной ковариации; ухудшает результат на всех тестировавшихся моделях (n=48) [7].",
+GLOSSARY = {  # column -> "what this is and why it matters in the analysis"
+    "ratio": "Quality loss from quantization: compressed_ppl / baseline_ppl. Lower is better; compared against GPTQ at equal BPW [1].",
+    "margin_vs_gptq": "gptq_ref − ratio; >0 means CHMC beats GPTQ at equal BPW 4.2875 [3].",
+    "beats_gptq": "Binary indicator 'beats GPTQ' (margin>0); its correlations ≈ the sign of margin.",
+    "gptq_ref": "The model's GPTQ reference — a constant, not a parameter; its correlations reflect the mix of models in the dataset [6].",
+    "dampening": "Hessian regularization λ·diag(H) before inversion. Larger = more conservative error compensation; 0.1 is best on average (77% beat GPTQ).",
+    "niter": "Number of column-wise GPTQ-style error refinement iterations; tested only in the dedicated experiments (n=57) [7].",
+    "strict_sequential": "1 — strictly row-by-row, 0 — in blocks. The effect is model-dependent: better on SmolLM, worse on qwen3-4b.",
+    "group_dim": "Quantization grouping: 0 (CHMC) — along output channels, 1 (GPTQ) — along input features.",
+    "hadamard": "B1 variant: SVD in the original cone + Hadamard rotation of the residual. Strongest negative effect on margin (r=−0.74).",
+    "cone_aware": "Cone-Aware variant accounting for BPW overhead; worsens the result (r=+0.49 with ratio).",
+    "qjl": "C3 patch 2: residual as 1-bit signs of random QJL projections. Catastrophic in the tests (ratio up to 12541) [4].",
+    "lloyd_max": "Lloyd–Max quantizer instead of uniform round() on the rotated distribution.",
+    "ip_metric": "Experimental variant of the error metric; no significant effect found.",
+    "whitening": "v7: whitening of the Hessian data by the full covariance; worsens the result on all tested models (n=48) [7].",
 }
 
 FOOTNOTES = [
-    "ratio = compressed_ppl / baseline_ppl — деградация PPL от квантизации при BPW≈4.2875; ниже лучше.",
-    "GPTQ-референсы по моделям (из SUMMARY каждого теста, тот же BPW 4.2875): smollm-135M 1.1761 · qwen2.5-0.5B 1.1407 · tinyllama-1.1B 1.0807 · qwen2.5-3b 1.085498 · qwen3-4b 1.091636.",
-    "margin_vs_gptq = gptq_ref − ratio; >0 — CHMC бьёт GPTQ при равном BPW.",
-    "healthy поднабор: ratio ≤ 3.0 — исключает два катастрофических qjl-прогона (ratio 12541.68 и 3515.69, SmolLM), которые доминировали бы во всех корреляциях.",
-    "Пустая ячейка = пара не определена (<3 общих точек или нулевая дисперсия в одном из столбцов).",
-    "gptq_ref — константа на модель: его корреляция с ratio (r=+0.56, healthy) отражает смешение моделей в наборе, а не эффект настройки. Для эффектов параметров смотрите param_effects_per_model.csv.",
-    "niter (n=57), whitening (n=48) и qjl (только fullset) тестировались на dedicated-подмножествах — корреляции с ними менее надёжны; сверяйтесь с n и |t| в таблицах.",
-    "|t| = sqrt((n−2)/(1−r²)) — грубая прокси значимости: при n≥6 |t|>~4 ≈ p<0.05.",
-    "Чёрная рамка на heatmap = топ-3 пары, затрагивающие колонки результата (ratio / margin_vs_gptq).",
+    "ratio = compressed_ppl / baseline_ppl — PPL degradation from quantization at BPW≈4.2875; lower is better.",
+    "Per-model GPTQ references (from each test's SUMMARY, same BPW 4.2875): smollm-135M 1.1761 · qwen2.5-0.5B 1.1407 · tinyllama-1.1B 1.0807 · qwen2.5-3b 1.085498 · qwen3-4b 1.091636.",
+    "margin_vs_gptq = gptq_ref − ratio; >0 — CHMC beats GPTQ at equal BPW.",
+    "Healthy subset: ratio ≤ 3.0 — excludes the two catastrophic qjl runs (ratio 12541.68 and 3515.69, SmolLM) that would have dominated all correlations.",
+    "Empty cell = pair undefined (<3 common points or zero variance in one of the columns).",
+    "gptq_ref is a per-model constant: its correlation with ratio (r=+0.56, healthy) reflects the mix of models in the dataset, not a tuning effect. For parameter effects see param_effects_per_model.csv.",
+    "niter (n=57), whitening (n=48) and qjl (fullset only) were tested on dedicated subsets — correlations with them are less reliable; check n and |t| in the tables.",
+    "|t| = sqrt((n−2)/(1−r²)) — a rough significance proxy: at n≥6, |t|>~4 ≈ p<0.05.",
+    "Black frame on the heatmap = top-3 pairs touching an outcome column (ratio / margin_vs_gptq).",
 ]
 
 
@@ -190,8 +190,8 @@ def build_html(figures, rows_all):
             counts[m] = counts.get(m, 0) + 1
 
     p = []
-    p.append("<!doctype html><html lang='ru'><head><meta charset='utf-8'>"
-             "<title>CHMC vs GPTQ — корреляционные матрицы</title>"
+    p.append("<!doctype html><html lang='en'><head><meta charset='utf-8'>"
+             "<title>CHMC vs GPTQ — correlation matrices</title>"
              "<style>"
              "body{font-family:system-ui,Segoe UI,sans-serif;max-width:1020px;margin:auto;"
              "padding:24px;color:#1a1a1a;line-height:1.5}"
@@ -202,14 +202,14 @@ def build_html(figures, rows_all):
              ".lead{color:#444}.fn{font-size:.85em;color:#555;column-count:2}"
              "sup{color:#b35900}</style></head><body>")
 
-    p.append("<h1>CHMC v6/v7 vs GPTQ — корреляционные матрицы параметров × результата</h1>"
-             f"<p class='lead'>Данные: все per-run JSON под <code>results_v6/</code> — {n_all} прогонов "
-             "при равном BPW≈4.2875 (CHMC против GPTQ-референса той же модели) [1][2]. "
-             f"healthy = ratio≤3.0 ({sum(1 for r in rows_all if _num(r.get('ratio')) and r['ratio']<=HEALTHY_MAX_RATIO)} прогонов, "
-             "исключены 2 катастрофических qjl-выброса) [4]. Матрицы: Пирсон и Спирмен (ранговая, устойчива к выбросам). "
-             "Красное = положительная связь, синее = отрицательная; числа в ячейках — r/ρ.</p>")
+    p.append("<h1>CHMC v6/v7 vs GPTQ — parameter × outcome correlation matrices</h1>"
+             f"<p class='lead'>Data: all per-run JSON under <code>results_v6/</code> — {n_all} runs "
+             "at equal BPW≈4.2875 (CHMC against the GPTQ reference of the same model) [1][2]. "
+             f"healthy = ratio≤3.0 ({sum(1 for r in rows_all if _num(r.get('ratio')) and r['ratio']<=HEALTHY_MAX_RATIO)} runs, "
+             "the 2 catastrophic qjl outliers excluded) [4]. Matrices: Pearson and Spearman (rank-based, robust to outliers). "
+             "Red = positive association, blue = negative; numbers in cells — r/ρ.</p>")
 
-    p.append("<h2>Модели в наборе</h2><table><tr><th>модель</th><th>прогонов</th>"
+    p.append("<h2>Models in the dataset</h2><table><tr><th>model</th><th>runs</th>"
              "<th>GPTQ ref ratio [2]</th></tr>")
     for m in sorted(counts, key=lambda k: -counts[k]):
         p.append(f"<tr><td>{_esc(m)}</td><td>{counts[m]}</td>"
@@ -221,7 +221,7 @@ def build_html(figures, rows_all):
         p.append(f"<h2>{_esc(fig['title'])}</h2>"
                  f"<img src='data:image/png;base64,{b64}' alt='{_esc(fig['key'])}'>"
                  f"<p class='lead'>{_esc(fig['lead'])}</p>")
-        p.append("<table><tr><th>пара</th><th>r</th><th>n пар [5]</th>"
+        p.append("<table><tr><th>pair</th><th>r</th><th>n pairs [5]</th>"
                  "<th>|t| [8]</th></tr>")
         for a, b, r_val, n, t in fig["tops"]:
             p.append(f"<tr><td>{_esc(a)} ↔ {_esc(b)}</td><td>{r_val:+.4f}</td>"
@@ -233,16 +233,16 @@ def build_html(figures, rows_all):
         for c in fig["cols"]:
             if c not in cols_all:
                 cols_all.append(c)
-    p.append("<h2>Словарь параметров — что и зачем</h2>"
-             "<p class='lead'>Все столбцы матриц с пояснением, что делает параметр в пайплайне "
-             "(v6/chmc_v6.py: low-rank SVD + групповая квантизация с GPTQ-стилевой компенсацией ошибки через Hessian) "
-             "и почему он в анализе.</p>"
-             "<table><tr><th>столбец</th><th>что это / зачем</th></tr>")
+    p.append("<h2>Parameter glossary — what and why</h2>"
+             "<p class='lead'>All matrix columns with an explanation of what the parameter does in the pipeline "
+             "(v6/chmc_v6.py: low-rank SVD + group quantization with GPTQ-style error compensation via the Hessian) "
+             "and why it is in the analysis.</p>"
+             "<table><tr><th>column</th><th>what this is / why</th></tr>")
     for c in cols_all:
         p.append(f"<tr><td><b>{_esc(c)}</b></td><td>{_esc(GLOSSARY.get(c, '—'))}</td></tr>")
     p.append("</table>")
 
-    p.append("<h2>Сноски</h2><ol class='fn'>")
+    p.append("<h2>Footnotes</h2><ol class='fn'>")
     for fn in FOOTNOTES:
         p.append(f"<li>{_esc(fn)}</li>")
     p.append("</ol></body></html>")
@@ -258,36 +258,36 @@ def main():
     rows_h = [r for r in rows_all if _num(r.get("ratio")) and r["ratio"] <= HEALTHY_MAX_RATIO]
 
     fn_common = [
-        f"Источник: results_v6/** — {len(rows_all)} прогонов CHMC v6/v7, BPW≈4.2875; "
+        f"Source: results_v6/** — {len(rows_all)} CHMC v6/v7 runs, BPW≈4.2875; "
         f"healthy = ratio≤{HEALTHY_MAX_RATIO:.0f} [4].",
-        "Пустые ячейки — пара не определена (<3 общих точек) [5]. Красное = +, синее = −.",
-        "Чёрная рамка — топ-3 пары с колонками результата (ratio / margin_vs_gptq) [9].",
+        "Empty cells — pair undefined (<3 common points) [5]. Red = +, blue = −.",
+        "Black frame — top-3 pairs with outcome columns (ratio / margin_vs_gptq) [9].",
     ]
 
     specs = [  # (key, csv file, subset rows for pair-n, title, subtitle, cbar label, lead text)
         ("pearson_healthy", "corr_pearson_matrix_healthy.csv", rows_h,
-         "Корреляции параметров × результата — healthy (n=124)",
-         "Главные драйверы: hadamard и dampening; все экспериментальные флаги выключены = лучше",
+         "Parameter × outcome correlations — healthy (n=124)",
+         "Main drivers: hadamard and dampening; all experimental flags off = better",
          "Pearson r",
-         "Сильнейшая связь с результатом — hadamard (r=−0.74 c margin): включение флага резко ухудшает результат. "
-         "dampening=0.1 и cone_aware=0 дают лучшие средние ratio; whitening вредит (n=48) [7]."),
+         "Strongest association with the outcome — hadamard (r=−0.74 with margin): enabling the flag sharply worsens the result. "
+         "dampening=0.1 and cone_aware=0 give the best mean ratio; whitening hurts (n=48) [7]."),
         ("spearman_healthy", "corr_spearman_matrix_healthy.csv", rows_h,
-         "Ранговые корреляции (Спирмен) — healthy (n=124)",
-         "Выводы совпадают с Пирсоном: метод устойчив к выбросам, которых здесь почти нет [4]",
+         "Rank correlations (Spearman) — healthy (n=124)",
+         "Conclusions match Pearson's: the method is robust to outliers, of which there are almost none here [4]",
          "Spearman ρ",
-         "Ранговая версия тех же данных: порядок пар практически не меняется, что подтверждает устойчивость "
-         "вывода о hadamard/dampening/cone_aware."),
+         "Rank version of the same data: the pair ordering barely changes, confirming the robustness of "
+         "the conclusion about hadamard/dampening/cone_aware."),
         ("pearson_fullset", "corr_pearson_matrix_fullset.csv", rows_all,
-         "Корреляции — fullset (n=126, включая выбросы)",
-         "qjl доминирует связь с ratio (r=+0.87) — два катастрофических прогона [4]",
+         "Correlations — fullset (n=126, including outliers)",
+         "qjl dominates the association with ratio (r=+0.87) — two catastrophic runs [4]",
          "Pearson r",
-         "В полном наборе qjl становится главной корреляцией (r=+0.87): оба его прогона дали ratio 12541 и 3515. "
-         "Поэтому основной анализ ведётся на healthy-подмножестве [4]."),
+         "In the full dataset qjl becomes the main correlation (r=+0.87): both of its runs gave ratio 12541 and 3515. "
+         "That is why the main analysis is done on the healthy subset [4]."),
         ("spearman_fullset", "corr_spearman_matrix_fullset.csv", rows_all,
-         "Ранговые корреляции (Спирмен) — fullset (n=126)",
-         "Даже по рангам qjl остаётся на первом месте — эффект не артефакт выброса одной точки",
+         "Rank correlations (Spearman) — fullset (n=126)",
+         "Even by ranks qjl stays in first place — the effect is not an artifact of a single outlier point",
          "Spearman ρ",
-         "Спирмен подтверждает: связь qjl↔ratio выживает даже после сжатия значений в ранги."),
+         "Spearman confirms: the qjl↔ratio association survives even after compressing values into ranks."),
     ]
 
     figures = []

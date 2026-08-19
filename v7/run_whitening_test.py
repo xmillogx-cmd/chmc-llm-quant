@@ -1,33 +1,33 @@
 #!/usr/bin/env python3
 """
-run_whitening_test.py — CHMC v7: полная ковариационная whitening (Lever 1)
+run_whitening_test.py — CHMC v7: full covariance whitening (Lever 1)
 ==========================================================================
 
-Контекст: v6 показал модель-зависимость — TinyLlama win 33σ, Qwen loss −2.8σ,
-SmolLM neutral. Hypothesis (Lever 1): текущий damping использует ТОЛЬКО
-ДИАГОНАЛЬ ковариации (diag_c), игнорируя корреляции между input-фичами.
-Полная whitening (C^{1/2}, data-adaptive) учитывает корреляции.
+Context: v6 showed model dependence — TinyLlama win 33σ, Qwen loss −2.8σ,
+SmolLM neutral. Hypothesis (Lever 1): the current damping uses ONLY
+the DIAGONAL of the covariance (diag_c), ignoring correlations between input features.
+Full whitening (C^{1/2}, data-adaptive) accounts for the correlations.
 
-Математика (в chmc_v6.py, ветка whitening=True):
-  Цель: минимизировать ||(W - W_lr) @ C^{1/2}||_F,  C = X^T X / n.
+Math (in chmc_v6.py, branch whitening=True):
+  Goal: minimize ||(W - W_lr) @ C^{1/2}||_F,  C = X^T X / n.
   W_weighted = W @ C^{1/2};  top-rank SVD;  W_lr = (U S Vt) @ C^{-1/2}.
-  При диагональной C это РОВНО текущий код (diag damping) — строгое обобщение.
+  For diagonal C this is EXACTLY the current code (diag damping) — a strict generalization.
 
-Риск (по niter-тесту): более data-adaptive трансформ → возможный overfit к
-калибровке. Проверяем эмпирически.
+Risk (per the niter test): a more data-adaptive transform -> possible overfit to
+the calibration set. Checking empirically.
 
-Тест: 3 модели × (whitening=False baseline, whitening=True) × 3 seed (42,43,44).
-Лучший конфиг каждой модели из v6-сетки. Равный BPW 4.2875.
-Сравнение per-seed (whitened - baseline) изолирует эффект whitening.
+Test: 3 models × (whitening=False baseline, whitening=True) × 3 seeds (42,43,44).
+Best config of each model from the v6 grid. Equal BPW 4.2875.
+Per-seed comparison (whitened - baseline) isolates the effect of whitening.
 
-Self-check: TinyLlama baseline (whitening=False, block_damp01) должен
-воспроизвести niter-тест (niter=5, seeds 42,43,44):
-  [1.058485, 1.057963, 1.059282]. Если нет — путь baseline сломан.
+Self-check: TinyLlama baseline (whitening=False, block_damp01) must
+reproduce the niter test (niter=5, seeds 42,43,44):
+  [1.058485, 1.057963, 1.059282]. If not — the baseline path is broken.
 
-Итого 18 прогонов, ~25-30 мин.
+Total: 18 runs, ~25-30 min.
 
-Запускает ПОЛЬЗОВАТЕЛЬ (агент разделяет GPU и рискует OOM).
-Артефакты: results_v6/whitening_test/
+Run by the USER (the agent shares the GPU and risks OOM).
+Artifacts: results_v6/whitening_test/
 
 Usage:
     python run_whitening_test.py
@@ -57,7 +57,7 @@ TARGET_BPW = 4.2875
 BASE_SEED = 42
 N_REPS = 3
 
-# лучший конфиг каждой модели из v6-сетки + GPTQ reference
+# best config of each model from the v6 grid + GPTQ reference
 MODELS_CFG = {
     "smollm-135m": {
         "overrides": {"strict_sequential": True, "dampening": 0.05},
@@ -73,7 +73,7 @@ MODELS_CFG = {
     },
 }
 
-# self-check: TinyLlama block_damp01, niter=5, seeds 42,43,44 (из niter_test)
+# self-check: TinyLlama block_damp01, niter=5, seeds 42,43,44 (from the niter test)
 SELF_CHECK = {
     "model": "tinyllama-1.1b",
     "ratios": [1.058485, 1.057963, 1.059282],

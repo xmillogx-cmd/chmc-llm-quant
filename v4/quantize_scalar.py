@@ -1,6 +1,6 @@
 """
-quantize_scalar.py — Наивное скалярное квантование (baseline).
-Результат → results/quant_scalar.json
+quantize_scalar.py — Naive scalar quantization (baseline).
+Result → results/quant_scalar.json
 """
 
 import json
@@ -91,7 +91,7 @@ def main():
 
         orig_bits, new_bits = 0, 0
 
-        # Прогресс по слоям
+        # Progress across layers
         layers = list(model.named_modules())
         linear_count = sum(1 for _, m in layers if isinstance(m, torch.nn.Linear))
 
