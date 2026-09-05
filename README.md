@@ -9,7 +9,19 @@ CHMC against the industrial GPTQ baseline **at an equal bit budget (BPW = 4.2875
 - v6 allocates the low-rank rank **per layer** so total BPW matches a target
   (default 4.2875), then compares perplexity (PPL) on WikiText-2.
 
-The full results write-up is in [`results_v6/article/index.html`](results_v6/article/index.html).
+## Published article
+
+The full results write-up is published on [nonndazone.ru](https://nonndazone.ru) in four languages:
+
+| Language | Article |
+|---|---|
+| RU | [Почему геометрия не сжимает веса](https://nonndazone.ru/article/pochemu-geometriya-ne-szhimaet-vesa) |
+| EN | [Why Geometry Does Not Compress Weights](https://nonndazone.ru/article/why-geometry-does-not-compress-weights) |
+| DE | [Warum Geometrie Gewichte nicht komprimiert](https://nonndazone.ru/article/warum-geometrie-gewichte-nicht-komprimiert) |
+| ZH | [为什么几何不能压缩权重](https://nonndazone.ru/article/%E4%B8%BA%E4%BB%80%E4%B9%88%E5%87%A0%E4%BD%95%E4%B8%8D%E8%83%BD%E5%8E%8B%E7%BC%A9%E6%9D%83%E9%87%8D) |
+
+The self-contained HTML source of the article (all figures embedded as data URIs)
+lives in this repository at [`results_v6/article/index.html`](results_v6/article/index.html).
 
 ## Headline results (BPW = 4.2875, PPL ratio = compressed / baseline, lower is better)
 
@@ -228,8 +240,9 @@ experimental flags off + dampening 0.1 give the best mean ratio.
 
 The self-contained HTML report with embedded figures lives at
 [`results_v6/article/index.html`](results_v6/article/index.html) (source draft:
-`draft_source.txt`, figure diagnostics in `_diag_*.py`). No regeneration step is needed —
-the HTML embeds all images as data URIs.
+`draft_source.txt`, figure diagnostics in `_diag_*.py`). It is the source of the article
+published on [nonndazone.ru](https://nonndazone.ru) in four languages — see "Published
+article" above. No regeneration step is needed — the HTML embeds all images as data URIs.
 
 ## Environment variables & output locations
 
