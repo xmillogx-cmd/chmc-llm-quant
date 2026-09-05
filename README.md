@@ -262,3 +262,7 @@ corresponding `<experiment>/logs/` directory.
   uses different seeds per rep.
 - CPU runs of the same quantization differ from GPU runs at the BLAS/SVD level; PPL
   ratios agree to ~1e-3, drift structure is unaffected (documented in v6.4).
+
+## License
+
+Released under the [MIT License](LICENSE).
